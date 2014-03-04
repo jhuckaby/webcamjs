@@ -36,14 +36,14 @@ Data URIs may be passed around like any URL, and can be submitted to your server
 
 If you want to override the default settings, just call `Webcam.set()` and pass in a hash with any of the following keys:
 
-	| Param Name | Default Value | Notes |
-	--------------------------------------
-	| `width` | (Auto) | Width of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
-	| `height` | (Auto) | Height of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
-	| `dest_width` | (Auto) | Width of the captured camera image in pixels, defaults to the live viewer size. |
-	| `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
-	| `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
-	| `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
+| Param Name | Default Value | Notes |
+|------------|---------------|-------|
+| `width` | (Auto) | Width of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
+| `height` | (Auto) | Height of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
+| `dest_width` | (Auto) | Width of the captured camera image in pixels, defaults to the live viewer size. |
+| `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
+| `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
+| `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -128,11 +128,11 @@ To use the library again after resetting, you must call `Webcam.attach()` and pa
 
 WebcamJS fires a number of events you can intercept using a JavaScript hook system.  Events are fired when the library is fully loaded, when the camera is live, and when an error occurs.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
 
-	| Event Name | Notes |
-	--------------------------------------
-	| `load` | Fires when the library finishes loading. |
-	| `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
-	| `error` | Fires when an error occurs (your callback function is passed an error string). |
+| Event Name | Notes |
+|------------|-------|
+| `load` | Fires when the library finishes loading. |
+| `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
+| `error` | Fires when an error occurs (your callback function is passed an error string). |
 
 Example:
 
