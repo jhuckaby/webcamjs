@@ -62,7 +62,7 @@ Here is an example of overriding some parameters.  Remember to call this *before
 
 ## Initialization
 
-WebcamJS is initialized and activated by "attaching" a live camera viewer to a DOM element.  The DOM element must already be created and empty.  Pass in a ID or CSS selector to the `Webcam.attach()` function.  Example:
+WebcamJS is initialized and activated by "attaching" a live camera viewer to a DOM element.  The DOM element must already be created and empty.  Pass in an ID or CSS selector to the `Webcam.attach()` function.  Example:
 
 ```javascript
 	Webcam.attach( '#my_camera' );
@@ -154,7 +154,7 @@ By default the `error` event shows a JavaScript alert dialog, but if you registe
 
 ## Submitting Images to a Server
 
-WebcamJS delivers your images by way of a client-side JavaScript Data URI.  The binary image data is encoded with Base64 and stuffed into the URI.  It is up to you to send this data to your server and decode it.  There are many ways to do this, but here is the easiest.
+WebcamJS delivers your images by way of a client-side JavaScript Data URI.  The binary image data is encoded with Base64 and stuffed into the URI.  It is up to you to send this data to your server and decode it.  There are many ways to do this, but here is probably the easiest:
 
 First, add a hidden text element to a form:
 
