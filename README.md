@@ -30,7 +30,7 @@ Host the `webcam.js` and `webcam.swf` files on your web server, and drop in this
 
 This will create a live camera view in the `my_camera` DIV, and when the **Take Snapshot** link is clicked it will take a still snapshot, convert it to a JPEG, and deliver a Data URI which is inserted into the `my_result` DIV as a standard `<IMG SRC>` tag.
 
-Data URIs may be passed around like any URL, and can be submitted to your server by stuffing them into a form field (see below for example of this).
+Data URIs may be passed around like any URL, and can be submitted to your server as well (see below for example of this).
 
 ## Configuration
 
