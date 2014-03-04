@@ -1,12 +1,10 @@
 # WebcamJS
 
-## HTML5 Webcam Image Capture Library with Flash Fallback
+WebcamJS is a small (~2K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server via a standard form.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
 
-WebcamJS is a small (~2K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [http://en.wikipedia.org/wiki/Data_URI_scheme](Data URIs).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server via a standard form.  WebcamJS uses [http://dev.w3.org/2011/webrtc/editor/getusermedia.html](HTML5 getUserMedia), but provides an automatic and invisible Flash fallback.
+WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically.
 
-WebcamJS is based on my old [https://code.google.com/p/jpegcam/](JPEGCam) project, but has been redesigned for the modern web.  Instead of relying on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically.
-
-[http://pixlcore.com/demos/webcamjs/basic.html](Check out a live demo here!)
+[Check out a live demo here!](http://pixlcore.com/demos/webcamjs/basic.html)
 
 ## QuickStart Guide
 
@@ -38,14 +36,14 @@ Data URIs may be passed around like any URL, and can be submitted to your server
 
 If you want to override the default settings, just call `Webcam.set()` and pass in a hash with any of the following keys:
 
-| Param Name | Default Value | Notes |
---------------------------------------
-| `width` | (Auto) | Width of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
-| `height` | (Auto) | Height of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
-| `dest_width` | (Auto) | Width of the captured camera image in pixels, defaults to the live viewer size. |
-| `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
-| `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
-| `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
+	| Param Name | Default Value | Notes |
+	--------------------------------------
+	| `width` | (Auto) | Width of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
+	| `height` | (Auto) | Height of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
+	| `dest_width` | (Auto) | Width of the captured camera image in pixels, defaults to the live viewer size. |
+	| `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
+	| `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
+	| `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -130,11 +128,11 @@ To use the library again after resetting, you must call `Webcam.attach()` and pa
 
 WebcamJS fires a number of events you can intercept using a JavaScript hook system.  Events are fired when the library is fully loaded, when the camera is live, and when an error occurs.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
 
-| Event Name | Notes |
---------------------------------------
-| `load` | Fires when the library finishes loading. |
-| `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
-| `error` | Fires when an error occurs (your callback function is passed an error string). |
+	| Event Name | Notes |
+	--------------------------------------
+	| `load` | Fires when the library finishes loading. |
+	| `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
+	| `error` | Fires when an error occurs (your callback function is passed an error string). |
 
 Example:
 
