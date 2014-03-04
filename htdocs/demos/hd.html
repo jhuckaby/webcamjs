@@ -1,0 +1,54 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>WebcamJS Test Page - HD Capture</title>
+	<style type="text/css">
+		body { font-family: Helvetica, sans-serif; }
+		h2, h3 { margin-top:0; }
+		form { margin-top: 15px; }
+		form > input { margin-right: 15px; }
+		#results { margin:20px; padding:20px; border:1px solid; background:#ccc; }
+	</style>
+</head>
+<body>
+	<h1>WebcamJS Test Page - HD Capture</h1>
+	<h3>Demonstrates 720p HD capture, if your camera supports it!</h3>
+	
+	<div id="my_camera" style="width:1280px; height:720px;"></div>
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="../webcam.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+	</script>
+	
+	<!-- A button for taking snaps -->
+	<form>
+		<input type=button value="Take HD Snapshot" onClick="take_snapshot()">
+	</form>
+	
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+		function take_snapshot() {
+			// take snapshot and get image data
+			var data_uri = Webcam.snap();
+			
+			// display results in page
+			document.getElementById('results').innerHTML = 
+				'<h2>Here is your large image:</h2>' + 
+				'<img src="'+data_uri+'"/>';
+		}
+	</script>
+	
+	<div id="results">Your captured image will appear here...</div>
+	
+</body>
+</html>
