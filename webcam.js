@@ -40,12 +40,15 @@ var Webcam = {
 		dest_width: 0, // size of captured image
 		dest_height: 0, // these default to width/height
 		image_format: 'jpeg', // image format (may be jpeg or png)
-		jpeg_quality: 90 // jpeg image quality from 0 (worst) to 100 (best)
+		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
+		force_flash: false // force flash mode
 	},
 	
 	hooks: {
 		load: null,
 		live: null,
+		uploadcomplete: null,
+		uploadprogress: null,
 		error: function(msg) { alert("Webcam.js Error: " + msg); }
 	}, // callback hook functions
 	
@@ -64,7 +67,7 @@ var Webcam = {
 			elem = document.getElementById(elem) || document.querySelector(elem);
 		}
 		if (!elem) {
-			return this.fireHook('error', "Could not locate DOM element to attach to.");
+			return this.dispatch('error', "Could not locate DOM element to attach to.");
 		}
 		
 		this.container = elem;
@@ -75,7 +78,7 @@ var Webcam = {
 		if (!this.params.dest_width) this.params.dest_width = this.params.width;
 		if (!this.params.dest_height) this.params.dest_height = this.params.height;
 		
-		if (this.userMedia) {
+		if (this.userMedia && !this.params.force_flash) {
 			// setup webcam video container
 			var video = document.createElement('video');
 			video.setAttribute('autoplay', 'autoplay');
@@ -122,11 +125,11 @@ var Webcam = {
 				video.src = window.URL.createObjectURL( stream ) || stream;
 				Webcam.loaded = true;
 				Webcam.live = true;
-				Webcam.fireHook('load');
-				Webcam.fireHook('live');
+				Webcam.dispatch('load');
+				Webcam.dispatch('live');
 			},
 			function(err) {
-				return this.fireHook('error', "Could not access webcam: " + err);
+				return this.dispatch('error', "Could not access webcam: " + err);
 			});
 		}
 		else {
@@ -169,27 +172,28 @@ var Webcam = {
 		name = name.replace(/^on/i, '').toLowerCase();
 		
 		if (typeof(this.hooks[name]) == 'undefined')
-			return alert("Event type not supported: " + name);
+			throw "Event type not supported: " + name;
 		
 		this.hooks[name] = callback;
 	},
 	
-	fireHook: function(name, value) {
+	dispatch: function() {
 		// fire hook callback, passing optional value to it
-		name = name.replace(/^on/i, '').toLowerCase();
+		var name = arguments[0].replace(/^on/i, '').toLowerCase();
+		var args = Array.prototype.slice.call(arguments, 1);
 		
 		if (this.hooks[name]) {
 			if (typeof(this.hooks[name]) == 'function') {
 				// callback is function reference, call directly
-				this.hooks[name](value);
+				this.hooks[name].apply(this, args);
 			}
 			else if (typeof(this.hooks[name]) == 'array') {
 				// callback is PHP-style object instance method
-				this.hooks[name][0][this.hooks[name][1]](value);
+				this.hooks[name][0][this.hooks[name][1]].apply(this.hooks[name][0], args);
 			}
 			else if (window[this.hooks[name]]) {
 				// callback is global function name
-				window[ this.hooks[name] ](value);
+				window[ this.hooks[name] ].apply(window, args);
 			}
 			return true;
 		}
@@ -251,16 +255,16 @@ var Webcam = {
 	
 	getMovie: function() {
 		// get reference to movie object/embed in DOM
-		if (!this.loaded) return this.fireHook('error', "Flash Movie is not loaded yet");
+		if (!this.loaded) return this.dispatch('error', "Flash Movie is not loaded yet");
 		var movie = document.getElementById('webcam_movie');
-		if (!movie) this.fireHook('error', "Cannot locate Flash movie 'webcam_movie' in DOM");
+		if (!movie) this.dispatch('error', "Cannot locate Flash movie 'webcam_movie' in DOM");
 		return movie;
 	},
 	
 	snap: function() {
 		// take snapshot and return image data uri
-		if (!this.loaded) return this.fireHook('error', "Webcam is not loaded yet");
-		if (!this.live) return this.fireHook('error', "Webcam is not live yet");
+		if (!this.loaded) return this.dispatch('error', "Webcam is not loaded yet");
+		if (!this.live) return this.dispatch('error', "Webcam is not live yet");
 		
 		if (this.userMedia) {
 			// native implementation
@@ -287,18 +291,18 @@ var Webcam = {
 			case 'flashLoadComplete':
 				// movie loaded successfully
 				this.loaded = true;
-				this.fireHook('load');
+				this.dispatch('load');
 				break;
 			
 			case 'cameraLive':
 				// camera is live and ready to snap
 				this.live = true;
-				this.fireHook('live');
+				this.dispatch('live');
 				break;
 
 			case 'error':
 				// Flash error
-				this.fireHook('error', msg);
+				this.dispatch('error', msg);
 				break;
 
 			default:
@@ -306,8 +310,82 @@ var Webcam = {
 				// console.log("webcam flash_notify: " + type + ": " + msg);
 				break;
 		}
+	},
+	
+	b64ToUint6: function(nChr) {
+		// convert base64 encoded character to 6-bit integer
+		// from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding
+		return nChr > 64 && nChr < 91 ? nChr - 65
+			: nChr > 96 && nChr < 123 ? nChr - 71
+			: nChr > 47 && nChr < 58 ? nChr + 4
+			: nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
+	},
+
+	base64DecToArr: function(sBase64, nBlocksSize) {
+		// convert base64 encoded string to Uintarray
+		// from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding
+		var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
+			nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2, 
+			taBytes = new Uint8Array(nOutLen);
+		
+		for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
+			nMod4 = nInIdx & 3;
+			nUint24 |= this.b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+			if (nMod4 === 3 || nInLen - nInIdx === 1) {
+				for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
+					taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+				}
+				nUint24 = 0;
+			}
+		}
+		return taBytes;
+	},
+	
+	upload: function(image_data_uri, target_url, callback) {
+		// submit image data to server using binary AJAX
+		if (callback) Webcam.on('uploadComplete', callback);
+		var form_elem_name = 'webcam';
+		
+		// detect image format from within image_data_uri
+		var image_fmt = '';
+		if (image_data_uri.match(/^data\:image\/(\w+)/))
+			image_fmt = RegExp.$1;
+		else
+			throw "Cannot locate image format in Data URI";
+		
+		// extract raw base64 data from Data URI
+		var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+		
+		// contruct use AJAX object
+		var http = new XMLHttpRequest();
+		http.open("POST", target_url, true);
+		
+		// setup progress events
+		if (http.upload && http.upload.addEventListener) {
+			http.upload.addEventListener( 'progress', function(e) {
+				if (e.lengthComputable) {
+					var progress = e.loaded / e.total;
+					Webam.dispatch('uploadProgress', progress, e);
+				}
+			}, false );
+		}
+		
+		// completion handler
+		http.onload = function() {
+			Webcam.dispatch('uploadComplete', http.status, http.responseText, http.statusText);
+		};
+		
+		// create a blob and decode our base64 to binary
+		var blob = new Blob( [ this.base64DecToArr(raw_image_data) ], {type: 'image/'+image_fmt} );
+		
+		// stuff into a form, so servers can easily receive it as a standard file upload
+		var form = new FormData();
+		form.append( form_elem_name, blob, form_elem_name+"."+image_fmt.replace(/e/, '') );
+		
+		// send data to server
+		http.send(form);
 	}
+	
 };
 
 Webcam.init();
-

@@ -1,6 +1,6 @@
 # WebcamJS
 
-WebcamJS is a small (~2K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server via a standard form.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
+WebcamJS is a small (~2.7K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server via a standard form.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically.
 
@@ -44,6 +44,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
+| `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -54,7 +55,8 @@ Here is an example of overriding some parameters.  Remember to call this *before
 		dest_width: 640,
 		dest_height: 480,
 		image_format: 'jpeg',
-		jpeg_quality: 90
+		jpeg_quality: 90,
+		force_flash: false
 	});
 	
 	// Attach camera here
@@ -133,6 +135,8 @@ WebcamJS fires a number of events you can intercept using a JavaScript hook syst
 | `load` | Fires when the library finishes loading. |
 | `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
 | `error` | Fires when an error occurs (your callback function is passed an error string). |
+| `uploadProgress` | Fires repeatedly while an upload is in progress (see below). |
+| `uploadComplete` | Fires once when the upload completes (see below). |
 
 Example:
 
@@ -154,9 +158,64 @@ By default the `error` event shows a JavaScript alert dialog, but if you registe
 
 ## Submitting Images to a Server
 
-WebcamJS delivers your images by way of a client-side JavaScript Data URI.  The binary image data is encoded with Base64 and stuffed into the URI.  It is up to you to send this data to your server and decode it.  There are many ways to do this, but here is probably the easiest:
+The `Webcam.snap()` function delivers your image by way of a client-side JavaScript Data URI.  The binary image data is encoded with Base64 and stuffed into the URI.  You can use this image in JavaScript and display it on your page.  However, the library also provides a way to decode and submit this image data to a server API endpoint, via binary AJAX.  Example:
 
-First, add a hidden text element to a form:
+```javascript
+	var data_uri = Webcam.snap();
+	
+	Webcam.upload( data_uri, 'myscript.php', function(code, text) {
+		// Upload complete!
+		// 'code' will be the HTTP response code from the server, e.g. 200
+		// 'text' will be the raw response content
+	} );
+```
+
+The `Webcam.upload()` function accepts three arguments: the Data URI containing the Base64 encoded image data as returned from `snap()`, a URL to your server API endpoint (PHP script, etc.), and a callback function to execute when the upload is complete.  You can alternatively specify the callback using `Webcam.on('uploadComplete', YOUR_FUNC)`.
+
+The image data is uploaded as part of a standard multipart form post, and included as a form element named `webcam`.  To gain access to this data, write some server-side code like this (PHP shown):
+
+```php
+	// be aware of file / directory permissions on your server
+	move_uploaded_file($_FILES['webcam']['tmp_name'], 'webcam.jpg');
+```
+
+Treat the uploaded data as if you were receiving a standard form submission with a `<input type="file" name="webcam">` element.  The data is sent in the same exact way.
+
+If you need to pass any additional information along with your image to the server, please add a query string to your script URL.  For example:
+
+```javascript
+	var username = 'jhuckaby';
+	var image_fmt = 'jpeg';
+	var url = 'myscript.php?username=' + username + '&format= + image_fmt;
+	Webcam.upload( data_uri, url, function(code, text) {...} );
+```
+
+### Tracking Upload Progress
+
+If you want to track progress while your image is uploading, you can register an event listener for the `uploadProgress` event.  This event is called very frequently while an upload is in progress, and passes the function a floating point number between 0.0 and 1.0 representing the upload progress.  Here is how to use:
+
+```javascript
+	var data_uri = Webcam.snap();
+	
+	Webcam.on( 'uploadProgress', function(progress) {
+		// Upload in progress
+		// 'progress' will be between 0.0 and 1.0
+	} );
+	
+	Webcam.on( 'uploadComplete', function(code, text) {
+		// Upload complete!
+		// 'code' will be the HTTP response code from the server, e.g. 200
+		// 'text' will be the raw response content
+	} );
+	
+	Webcam.upload( data_uri, 'myscript.php' );
+```
+
+### Including in an Existing Form
+
+If you are already submitting a form on your page, and simply want to include the image data in your form, you can do this.  However, note that the data will be Base64 encoded until it gets to the server, so you will need to decode it on the server-side, and the bandwidth required will be about 30% larger than normal.
+
+First, add a hidden text element to your form:
 
 ```html
 	<form id="myform" method="post" action="myscript.php">
@@ -174,7 +233,7 @@ Then, when you snap your picture, stuff the Data URI into the form field value (
 	document.querySelector('#myform').submit();
 ```
 
-Finally, on your server, grab the form data as if it were a plain text field, decode the Base64, and you have your binary image file.  Example here in PHP, assumes JPEG format:
+Finally, on your server, grab the form data as if it were a plain form text field, decode the Base64, and you have your binary image file!  Example here in PHP, which assumes JPEG format:
 
 ```php
 	$encoded_data = $_POST['mydata'];
@@ -184,6 +243,8 @@ Finally, on your server, grab the form data as if it were a plain text field, de
 	$result = file_put_contents( 'webcam.jpg', $binary_data );
 	if (!$result) die("Could not save image!  Check file permissions.");
 ```
+
+Have fun!
 
 ## License
 
