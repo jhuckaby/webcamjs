@@ -365,7 +365,7 @@ var Webcam = {
 			http.upload.addEventListener( 'progress', function(e) {
 				if (e.lengthComputable) {
 					var progress = e.loaded / e.total;
-					Webam.dispatch('uploadProgress', progress, e);
+					Webcam.dispatch('uploadProgress', progress, e);
 				}
 			}, false );
 		}
