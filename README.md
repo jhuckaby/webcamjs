@@ -1,6 +1,6 @@
 # WebcamJS
 
-WebcamJS is a small (~2.7K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server via a standard form.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
+WebcamJS is a small (~2.7K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically.
 
@@ -215,7 +215,9 @@ If you want to track progress while your image is uploading, you can register an
 
 ### Including in an Existing Form
 
-If you are already submitting a form on your page, and simply want to include the image data in your form, you can do this.  However, note that the data will be Base64 encoded until it gets to the server, so you will need to decode it on the server-side, and the bandwidth required will be about 30% larger than normal.
+If you are already submitting a form on your page, and simply want to include the image data in your form, you can do this.  However, note that the data will be Base64 encoded until it gets to the server, so you will need to decode it on the server-side, and the file size in transit will be about 30% larger than normal.
+
+This alternate upload technique is also shown here because it's probably the only way it'll ever work in IE 7, 8, and 9.  Those older IE versions do not support binary AJAX and blobs, so the standard `Webcam.upload()` function will not work, and you'll have to use a form trick like this:
 
 First, add a hidden text element to your form:
 
@@ -231,11 +233,11 @@ Then, when you snap your picture, stuff the Data URI into the form field value (
 	var data_uri = Webcam.snap();
 	var raw_image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
 	
-	document.querySelector('#mydata').value = raw_image_data;
-	document.querySelector('#myform').submit();
+	document.getElementById('mydata').value = raw_image_data;
+	document.getElementById('myform').submit();
 ```
 
-Finally, on your server, grab the form data as if it were a plain form text field, decode the Base64, and you have your binary image file!  Example here in PHP, which assumes JPEG format:
+Finally, in your server-side script, grab the form data as if it were a plain form text field, decode the Base64, and you have your binary image file!  Example here in PHP, which assumes JPEG format:
 
 ```php
 	$encoded_data = $_POST['mydata'];
@@ -245,8 +247,6 @@ Finally, on your server, grab the form data as if it were a plain form text fiel
 	$result = file_put_contents( 'webcam.jpg', $binary_data );
 	if (!$result) die("Could not save image!  Check file permissions.");
 ```
-
-Have fun!
 
 ## License
 
