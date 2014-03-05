@@ -221,7 +221,7 @@ var Webcam = {
 			var scpts = document.getElementsByTagName('script');
 			for (var idx = 0, len = scpts.length; idx < len; idx++) {
 				var src = scpts[idx].getAttribute('src');
-				if (src && src.match(/webcam(\.min)?\.js/)) {
+				if (src && src.match(/\/webcam(\.min)?\.js/)) {
 					base_url = src.replace(/\/webcam(\.min)?\.js.*$/, '');
 					idx = len;
 				}
