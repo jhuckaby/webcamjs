@@ -186,9 +186,11 @@ If you need to pass any additional information along with your image to the serv
 ```javascript
 	var username = 'jhuckaby';
 	var image_fmt = 'jpeg';
-	var url = 'myscript.php?username=' + username + '&format= + image_fmt;
+	var url = 'myscript.php?username=' + username + '&format=' + image_fmt;
 	Webcam.upload( data_uri, url, function(code, text) {...} );
 ```
+
+Those variables will then be available to your server-side code however you would normally access the query string, e.g. `$_GET['username']` in PHP.
 
 ### Tracking Upload Progress
 
