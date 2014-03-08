@@ -6,6 +6,12 @@ WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) projec
 
 [Check out a live demo here!](http://pixlcore.com/demos/webcamjs/basic.html)
 
+## Open Source
+
+WebcamJS is open source, MIT licensed, and available on GitHub:
+
+https://github.com/jhuckaby/webcamjs
+
 ## QuickStart Guide
 
 Host the `webcam.js` and `webcam.swf` files on your web server, and drop in this HTML snippet:
