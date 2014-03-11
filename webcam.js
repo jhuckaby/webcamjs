@@ -123,6 +123,7 @@ var Webcam = {
 			function(stream) {
 				// got access, attach stream to video
 				video.src = window.URL.createObjectURL( stream ) || stream;
+				Webcam.stream = stream;
 				Webcam.loaded = true;
 				Webcam.live = true;
 				Webcam.dispatch('load');
@@ -141,6 +142,8 @@ var Webcam = {
 	reset: function() {
 		// shutdown camera, reset to potentially attach again
 		if (this.userMedia) {
+			try { this.stream.stop(); } catch (e) {;}
+			delete this.stream;
 			delete this.canvas;
 			delete this.context;
 			delete this.video;
