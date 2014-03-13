@@ -118,6 +118,7 @@ var Webcam = {
 			this.canvas = canvas;
 			
 			// ask user for access to their camera
+			var self = this;
 			navigator.getUserMedia({
 				"audio": false,
 				"video": true
@@ -132,7 +133,7 @@ var Webcam = {
 				Webcam.dispatch('live');
 			},
 			function(err) {
-				return this.dispatch('error', "Could not access webcam: " + err);
+				return self.dispatch('error', "Could not access webcam.");
 			});
 		}
 		else {
