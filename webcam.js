@@ -27,7 +27,6 @@ var Webcam = {
 	version: '1.0.0',
 	
 	// globals
-	ie: !!navigator.userAgent.match(/(MSIE|Trident)/),
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
 	swfURL: '', // URI to webcam.swf movie (defaults to cwd)
 	loaded: false, // true when webcam movie finishes loading
@@ -78,7 +77,10 @@ var Webcam = {
 		if (!this.params.dest_width) this.params.dest_width = this.params.width;
 		if (!this.params.dest_height) this.params.dest_height = this.params.height;
 		
-		if (this.userMedia && !this.params.force_flash) {
+		// if force_flash is set, disable userMedia
+		if (this.params.force_flash) this.userMedia = null;
+		
+		if (this.userMedia) {
 			// setup webcam video container
 			var video = document.createElement('video');
 			video.setAttribute('autoplay', 'autoplay');
@@ -246,12 +248,7 @@ var Webcam = {
 			flashvars += key + '=' + escape(this.params[key]);
 		}
 		
-		if (this.ie) {
-			html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie" align="middle"><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/></object>';
-		}
-		else {
-			html += '<embed id="webcam_movie" src="'+this.swfURL+'" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'" />';
-		}
+		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+this.swfURL+'" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
 		
 		return html;
 	},
@@ -259,8 +256,9 @@ var Webcam = {
 	getMovie: function() {
 		// get reference to movie object/embed in DOM
 		if (!this.loaded) return this.dispatch('error', "Flash Movie is not loaded yet");
-		var movie = document.getElementById('webcam_movie');
-		if (!movie) this.dispatch('error', "Cannot locate Flash movie 'webcam_movie' in DOM");
+		var movie = document.getElementById('webcam_movie_obj');
+		if (!movie || !movie._snap) movie = document.getElementById('webcam_movie_embed');
+		if (!movie) this.dispatch('error', "Cannot locate Flash movie in DOM");
 		return movie;
 	},
 	
