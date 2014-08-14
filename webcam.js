@@ -155,6 +155,10 @@ var Webcam = {
 			delete this.canvas;
 			delete this.context;
 			delete this.video;
+			this.params.width = 0; // reset size between calls
+			this.params.height = 0;
+			this.params.dest_width = 0;
+			this.params.dest_height = 0;
 		}
 		
 		this.container.innerHTML = '';
