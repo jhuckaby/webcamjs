@@ -40,7 +40,8 @@ var Webcam = {
 		dest_height: 0, // these default to width/height
 		image_format: 'jpeg', // image format (may be jpeg or png)
 		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
-		force_flash: false // force flash mode
+		force_flash: false, // force flash mode
+		cvas: false  // for working with existing canvas
 	},
 	
 	hooks: {
@@ -268,15 +269,20 @@ var Webcam = {
 		return movie;
 	},
 	
-	snap: function() {
+	snap: function(elem) {
 		// take snapshot and return image data uri
 		if (!this.loaded) return this.dispatch('error', "Webcam is not loaded yet");
 		if (!this.live) return this.dispatch('error', "Webcam is not live yet");
-		
+
 		if (this.userMedia) {
 			// native implementation
-			this.context.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
-			return this.canvas.toDataURL('image/' + this.params.image_format, this.params.jpeg_quality / 100 );
+			if (this.params.cvas) {
+				elem.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
+				}
+			else {
+				this.context.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
+				return this.canvas.toDataURL('image/' + this.params.image_format, this.params.jpeg_quality / 100 );
+				}
 		}
 		else {
 			// flash fallback
