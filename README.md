@@ -63,7 +63,7 @@ Here is an example of overriding some parameters.  Remember to call this *before
 		dest_height: 480,
 		image_format: 'jpeg',
 		jpeg_quality: 90,
-		force_flash: false
+		force_flash: false,
 		cvas: false
 	});
 	
