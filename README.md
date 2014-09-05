@@ -51,6 +51,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
+| `cvas` | false | Set this to 'true' if you want to capture images direct to a <canvas> |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -62,7 +63,8 @@ Here is an example of overriding some parameters.  Remember to call this *before
 		dest_height: 480,
 		image_format: 'jpeg',
 		jpeg_quality: 90,
-		force_flash: false
+		force_flash: false,
+		cvas: false
 	});
 	
 	// Attach camera here
@@ -86,6 +88,15 @@ To snap a picture, just call the `Webcam.snap()` function.  The image data will 
 	var data_uri = Webcam.snap();
 	
 	document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+```
+
+Alternatively, if you're intending to draw the image to an existing canvas, you'll get much better performance if you pass the canvas object directly to the .snap() function. Example:
+
+```javascript
+	Webcam.set({cvas: true});
+	var canvas = document.getElementById('canvas');
+	var context = canvas.getContext('2d');
+	Webcam.snap( context );
 ```
 
 ## Customizing Image Size
