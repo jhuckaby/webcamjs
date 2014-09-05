@@ -8,13 +8,13 @@ Here are some live demos showcasing various features of the library:
 
 | Demo Link | Description |
 |------|-------|
-| [Basic Demo](http://pixlcore.com/demos/webcamjs/basic.html) | Demonstrates a basic 320x240 image capture. |
-| [Large Demo](http://pixlcore.com/demos/webcamjs/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
-| [Crop Demo](http://pixlcore.com/demos/webcamjs/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
-| [Large Crop Demo](http://pixlcore.com/demos/webcamjs/basic.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
-| [HD Demo](http://pixlcore.com/demos/webcamjs/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
-| [SFX Demo](http://pixlcore.com/demos/webcamjs/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
-| [Flash Demo](http://pixlcore.com/demos/webcamjs/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
+| [Basic Demo](http://pixlcore.com/demos/webcamjs/demos/basic.html) | Demonstrates a basic 320x240 image capture. |
+| [Large Demo](http://pixlcore.com/demos/webcamjs/demos/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
+| [Crop Demo](http://pixlcore.com/demos/webcamjs/demos/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
+| [Large Crop Demo](http://pixlcore.com/demos/webcamjs/demos/basic.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
+| [HD Demo](http://pixlcore.com/demos/webcamjs/demos/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
+| [SFX Demo](http://pixlcore.com/demos/webcamjs/demos/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
+| [Flash Demo](http://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
 
 ## Open Source
 
@@ -148,7 +148,7 @@ The size of the captured JPEG / PNG image is set to match the live camera viewer
 	// Attach camera here
 ```
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/large.html)
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/large.html)
 
 ## Cropping The Image
 
@@ -167,7 +167,7 @@ WebcamJS can also crop the final image for you, to any dimensions you like.  Thi
 
 This would crop a 240x240 square out of the center of the 320x240 webcam image.  The crop is also reflected in the live preview area.  In this case the live preview would also be cropped to 240x240, so the user can see exactly what portion of the image will be captured.
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/crop.html)
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/crop.html)
 
 ## Setting an Alternate SWF Location
 
