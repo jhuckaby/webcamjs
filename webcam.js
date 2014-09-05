@@ -85,6 +85,10 @@ var Webcam = {
 		// if force_flash is set, disable userMedia
 		if (this.params.force_flash) this.userMedia = null;
 		
+		// adjust scale if dest_width or dest_height is different
+		var scaleX = this.params.width / this.params.dest_width;
+		var scaleY = this.params.height / this.params.dest_height;
+		
 		if (this.userMedia) {
 			// setup webcam video container
 			var video = document.createElement('video');
@@ -92,12 +96,8 @@ var Webcam = {
 			video.style.width = '' + this.params.dest_width + 'px';
 			video.style.height = '' + this.params.dest_height + 'px';
 			
-			// adjust scale if dest_width or dest_height is different
-			var scaleX = this.params.width / this.params.dest_width;
-			var scaleY = this.params.height / this.params.dest_height;
-			
 			if ((scaleX != 1.0) || (scaleY != 1.0)) {
-				elem.style.overflow = 'visible';
+				elem.style.overflow = 'hidden';
 				video.style.webkitTransformOrigin = '0px 0px';
 				video.style.mozTransformOrigin = '0px 0px';
 				video.style.msTransformOrigin = '0px 0px';
@@ -113,14 +113,6 @@ var Webcam = {
 			// add video element to dom
 			elem.appendChild( video );
 			this.video = video;
-			
-			// create offscreen canvas element to hold pixels later on
-			var canvas = document.createElement('canvas');
-			canvas.width = this.params.dest_width;
-			canvas.height = this.params.dest_height;
-			var context = canvas.getContext('2d');
-			this.context = context;
-			this.canvas = canvas;
 			
 			// ask user for access to their camera
 			var self = this;
@@ -145,6 +137,24 @@ var Webcam = {
 			// flash fallback
 			elem.innerHTML = this.getSWFHTML();
 		}
+		
+		// setup final crop for live preview
+		if (this.params.crop_width && this.params.crop_height) {
+			var scaled_crop_width = Math.floor( this.params.crop_width * scaleX );
+			var scaled_crop_height = Math.floor( this.params.crop_height * scaleY );
+			
+			elem.style.width = '' + scaled_crop_width + 'px';
+			elem.style.height = '' + scaled_crop_height + 'px';
+			elem.style.overflow = 'hidden';
+			
+			elem.scrollLeft = Math.floor( (this.params.width / 2) - (scaled_crop_width / 2) );
+			elem.scrollTop = Math.floor( (this.params.height / 2) - (scaled_crop_height / 2) );
+		}
+		else {
+			// no crop, set size to desired
+			elem.style.width = '' + this.params.width + 'px';
+			elem.style.height = '' + this.params.height + 'px';
+		}
 	},
 	
 	reset: function() {
@@ -152,8 +162,6 @@ var Webcam = {
 		if (this.userMedia) {
 			try { this.stream.stop(); } catch (e) {;}
 			delete this.stream;
-			delete this.canvas;
-			delete this.context;
 			delete this.video;
 		}
 		
@@ -254,7 +262,8 @@ var Webcam = {
 			flashvars += key + '=' + escape(this.params[key]);
 		}
 		
-		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+this.swfURL+'" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
+		// construct object/embed tag
+		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+this.swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
 		
 		return html;
 	},
@@ -268,21 +277,84 @@ var Webcam = {
 		return movie;
 	},
 	
-	snap: function() {
+	snap: function(user_callback, user_canvas) {
 		// take snapshot and return image data uri
 		if (!this.loaded) return this.dispatch('error', "Webcam is not loaded yet");
 		if (!this.live) return this.dispatch('error', "Webcam is not live yet");
+		if (!user_callback) return this.dispatch('error', "Please provide a callback function or canvas to snap()");
 		
+		// create offscreen canvas element to hold pixels
+		var canvas = document.createElement('canvas');
+		canvas.width = this.params.dest_width;
+		canvas.height = this.params.dest_height;
+		var context = canvas.getContext('2d');
+		
+		// create inline function, called after image load (flash) or immediately (native)
+		var self = this;
+		var params = this.params;
+		
+		var func = function() {
+			// render image if needed (flash)
+			if (this.src && this.width && this.height) {
+				context.drawImage(this, 0, 0, params.dest_width, params.dest_height);
+			}
+			
+			// crop if desired
+			if (params.crop_width && params.crop_height) {
+				var crop_canvas = document.createElement('canvas');
+				crop_canvas.width = params.crop_width;
+				crop_canvas.height = params.crop_height;
+				var crop_context = crop_canvas.getContext('2d');
+				
+				crop_context.drawImage( canvas, 
+					Math.floor( (params.dest_width / 2) - (params.crop_width / 2) ),
+					Math.floor( (params.dest_height / 2) - (params.crop_height / 2) ),
+					params.crop_width,
+					params.crop_height,
+					0,
+					0,
+					params.crop_width,
+					params.crop_height
+				);
+				
+				// swap canvases
+				context = crop_context;
+				canvas = crop_canvas;
+			}
+			
+			// render to user canvas if desired
+			if (user_canvas) {
+				var user_context = user_canvas.getContext('2d');
+				user_context.drawImage( canvas, 0, 0 );
+			}
+			
+			// fire user callback if desired
+			user_callback(
+				user_canvas ? null : canvas.toDataURL('image/' + params.image_format, params.jpeg_quality / 100 ),
+				canvas,
+				context
+			);
+		};
+		
+		// grab image frame from userMedia or flash movie
 		if (this.userMedia) {
 			// native implementation
-			this.context.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
-			return this.canvas.toDataURL('image/' + this.params.image_format, this.params.jpeg_quality / 100 );
+			context.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
+			
+			// fire callback right away
+			func();
 		}
 		else {
 			// flash fallback
 			var raw_data = this.getMovie()._snap();
-			return 'data:image/'+this.params.image_format+';base64,' + raw_data;
+			
+			// render to image, fire callback when complete
+			var img = new Image();
+			img.onload = func;
+			img.src = 'data:image/'+this.params.image_format+';base64,' + raw_data;
 		}
+		
+		return null;
 	},
 	
 	configure: function(panel) {

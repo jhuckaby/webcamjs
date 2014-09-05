@@ -1,10 +1,20 @@
 # WebcamJS
 
-WebcamJS is a small (~2.7K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Flash fallback.
+WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Adobe Flash fallback.
 
-WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically.
+WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
 
-[Check out a live demo here!](http://pixlcore.com/demos/webcamjs/basic.html)
+Here are some live demos showcasing various features of the library:
+
+| Demo Link | Description |
+|------|-------|
+| [Basic Demo](http://pixlcore.com/demos/webcamjs/basic.html) | Demonstrates a basic 320x240 image capture. |
+| [Large Demo](http://pixlcore.com/demos/webcamjs/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
+| [Crop Demo](http://pixlcore.com/demos/webcamjs/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
+| [Large Crop Demo](http://pixlcore.com/demos/webcamjs/basic.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
+| [HD Demo](http://pixlcore.com/demos/webcamjs/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
+| [SFX Demo](http://pixlcore.com/demos/webcamjs/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
+| [Flash Demo](http://pixlcore.com/demos/webcamjs/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
 
 ## Open Source
 
@@ -26,8 +36,9 @@ Host the `webcam.js` and `webcam.swf` files on your web server, and drop in this
 		Webcam.attach( '#my_camera' );
 		
 		function take_snapshot() {
-			var data_uri = Webcam.snap();
-			document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+			Webcam.snap( function(data_uri) {
+				document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+			} );
 		}
 	</script>
 
@@ -48,6 +59,8 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `height` | (Auto) | Height of the live camera viewer in pixels, defaults to the actual size of the DOM element. |
 | `dest_width` | (Auto) | Width of the captured camera image in pixels, defaults to the live viewer size. |
 | `dest_height` | (Auto) | Height of the captured camera image in pixels, defaults to the live viewer size. |
+| `crop_width` | (Disabled) | Width of the final cropped image in pixels, defaults to `dest_width`. |
+| `crop_height` | (Disabled) | Height of the final cropped image in pixels, defaults to `dest_height`. |
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
@@ -78,14 +91,35 @@ WebcamJS is initialized and activated by "attaching" a live camera viewer to a D
 
 This will activate the user's webcam, ask for the appropriate permission, and begin showing a live camera image in the specified DOM element.
 
+Note that the browser itself handles asking the user for permission to use their camera.  WebcamJS has no control over this, so there is no way to style the UI.  Each browser does it a little differently, typically a bar at the top of the page, and Flash does it inside the view area.
+
 ## Snapping a Picture
 
-To snap a picture, just call the `Webcam.snap()` function.  The image data will be returned as a Data URI, which you can then display in your web page, or submit to a server.  Example:
+To snap a picture, just call the `Webcam.snap()` function, passing in a callback function.  The image data will be passed to your function as a Data URI, which you can then display in your web page, or submit to a server.  Example:
 
 ```javascript
-	var data_uri = Webcam.snap();
+	Webcam.snap( function(data_uri) {
+		document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+	} );
+```
+
+Your function is also passed a HTML5 Canvas and a 2D Context object, so you can gain access to the raw pixels instead of a compressed image Data URI.  These are passed as the 2nd and 3rd arguments to your callback function.  Example:
+
+```javascript
+	Webcam.snap( function(data_uri, canvas, context) {
+		// copy image to my own canvas
+		myContext.drawImage( context, 0, 0 );
+	} );
+```
+
+If you would prefer that WebcamJS simply copy the image into your own canvas, it can do that instead of generating a Data URI (which can be an expensive operation).  To do this, simply pass your canvas object to the `Webcam.snap()` method, as the 2nd argument, right after your callback function.  Example:
+
+```javascript
+	// assumes 'myCanvas' is a reference to your own canvas object, at the correct size
 	
-	document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+	Webcam.snap( function() {
+		// the webcam image is now in your own canvas
+	}, myCanvas );
 ```
 
 ## Customizing Image Size
@@ -114,6 +148,27 @@ The size of the captured JPEG / PNG image is set to match the live camera viewer
 	// Attach camera here
 ```
 
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/large.html)
+
+## Cropping The Image
+
+WebcamJS can also crop the final image for you, to any dimensions you like.  This is useful for when you want a square image (perhaps for a website profile pic), but you want to capture the image from the user's webcam at 4:3 ratio to be fully compatible (some cameras require 4:3 and cannot capture square images).  To do this, include `crop_width` and `crop_height` params, specifying the area to crop out of the center of the final image:
+
+```javascript
+	Webcam.set({
+		width: 320,
+		height: 240,
+		crop_width: 240,
+		crop_height: 240
+	});
+	
+	// Attach camera here
+```
+
+This would crop a 240x240 square out of the center of the 320x240 webcam image.  The crop is also reflected in the live preview area.  In this case the live preview would also be cropped to 240x240, so the user can see exactly what portion of the image will be captured.
+
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/crop.html)
+
 ## Setting an Alternate SWF Location
 
 By default WebcamJS looks for the SWF file in the same directory as the JS file.  If you are hosting the SWF in a different location, please set it using the `Webcam.setSWFLocation()` function.  Example:
@@ -134,7 +189,7 @@ To use the library again after resetting, you must call `Webcam.attach()` and pa
 
 ## Custom Events
 
-WebcamJS fires a number of events you can intercept using a JavaScript hook system.  Events are fired when the library is fully loaded, when the camera is live, and when an error occurs.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
+WebcamJS fires a number of events you can intercept using a simple JavaScript hook system.  Events are fired when: the library is fully loaded, when the camera is live, when an error occurs, and during upload.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
 
 | Event Name | Notes |
 |------------|-------|
@@ -236,11 +291,12 @@ First, add a hidden text element to your form:
 Then, when you snap your picture, stuff the Data URI into the form field value (minus the header), and submit the form:
 
 ```javascript
-	var data_uri = Webcam.snap();
-	var raw_image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
-	
-	document.getElementById('mydata').value = raw_image_data;
-	document.getElementById('myform').submit();
+	Webcam.snap( function(data_uri) {
+		var raw_image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+		
+		document.getElementById('mydata').value = raw_image_data;
+		document.getElementById('myform').submit();
+	} );
 ```
 
 Finally, in your server-side script, grab the form data as if it were a plain form text field, decode the Base64, and you have your binary image file!  Example here in PHP, which assumes JPEG format:

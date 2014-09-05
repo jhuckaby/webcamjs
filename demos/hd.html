@@ -14,9 +14,9 @@
 </head>
 <body>
 	<h1>WebcamJS Test Page - HD Capture</h1>
-	<h3>Demonstrates 720p HD capture, if your camera supports it!</h3>
+	<h3>Demonstrates 720p HD capture (1280x720), if your camera supports it!</h3>
 	
-	<div id="my_camera" style="width:1280px; height:720px;"></div>
+	<div id="my_camera"></div>
 	
 	<!-- First, include the Webcam.js JavaScript Library -->
 	<script type="text/javascript" src="../webcam.js"></script>
@@ -24,6 +24,8 @@
 	<!-- Configure a few settings and attach camera -->
 	<script language="JavaScript">
 		Webcam.set({
+			width: 1280,
+			height: 720,
 			image_format: 'jpeg',
 			jpeg_quality: 90
 		});
@@ -39,12 +41,12 @@
 	<script language="JavaScript">
 		function take_snapshot() {
 			// take snapshot and get image data
-			var data_uri = Webcam.snap();
-			
-			// display results in page
-			document.getElementById('results').innerHTML = 
-				'<h2>Here is your large image:</h2>' + 
-				'<img src="'+data_uri+'"/>';
+			Webcam.snap( function(data_uri) {
+				// display results in page
+				document.getElementById('results').innerHTML = 
+					'<h2>Here is your large image:</h2>' + 
+					'<img src="'+data_uri+'"/>';
+			} );
 		}
 	</script>
 	

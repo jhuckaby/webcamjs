@@ -16,18 +16,19 @@
 	<div id="results">Your captured image will appear here...</div>
 	
 	<h1>WebcamJS Test Page</h1>
-	<h3>Demonstrates simple 320x240 capture &amp; display</h3>
+	<h3>Demonstrates Adobe Flash capture &amp; display</h3>
 	
 	<div id="my_camera"></div>
 	
 	<!-- First, include the Webcam.js JavaScript Library -->
-	<script type="text/javascript" src="../webcam.js"></script>
+	<script type="text/javascript" src="webcam.js"></script>
 	
 	<!-- Configure a few settings and attach camera -->
 	<script language="JavaScript">
 		Webcam.set({
 			width: 320,
 			height: 240,
+			force_flash: true,
 			image_format: 'jpeg',
 			jpeg_quality: 90
 		});
