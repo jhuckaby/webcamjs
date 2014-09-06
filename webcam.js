@@ -73,8 +73,15 @@ var Webcam = {
 		if (!elem) {
 			return this.dispatch('error', "Could not locate DOM element to attach to.");
 		}
-		
 		this.container = elem;
+		elem.innerHTML = ''; // start with empty element
+		
+		// insert "peg" so we can insert our preview canvas adjacent to it later on
+		var peg = document.createElement('div');
+		elem.appendChild( peg );
+		this.peg = peg;
+		
+		// set width/height if not already set
 		if (!this.params.width) this.params.width = elem.offsetWidth;
 		if (!this.params.height) this.params.height = elem.offsetHeight;
 		
@@ -135,7 +142,9 @@ var Webcam = {
 		}
 		else {
 			// flash fallback
-			elem.innerHTML = this.getSWFHTML();
+			var div = document.createElement('div');
+			div.innerHTML = this.getSWFHTML();
+			elem.appendChild( div );
 		}
 		
 		// setup final crop for live preview
@@ -277,11 +286,112 @@ var Webcam = {
 		return movie;
 	},
 	
+	freeze: function() {
+		// show preview, freeze camera
+		var self = this;
+		var params = this.params;
+		
+		// kill preview if already active
+		if (this.preview_active) this.unfreeze();
+		
+		// determine scale factor
+		var scaleX = this.params.width / this.params.dest_width;
+		var scaleY = this.params.height / this.params.dest_height;
+		
+		// calc final size of image
+		var final_width = params.crop_width || params.dest_width;
+		var final_height = params.crop_height || params.dest_height;
+		
+		// create canvas for holding preview
+		var preview_canvas = document.createElement('canvas');
+		preview_canvas.width = final_width;
+		preview_canvas.height = final_height;
+		var preview_context = preview_canvas.getContext('2d');
+		
+		// save for later use
+		this.preview_canvas = preview_canvas;
+		this.preview_context = preview_context;
+		
+		// scale for preview size
+		if ((scaleX != 1.0) || (scaleY != 1.0)) {
+			preview_canvas.style.webkitTransformOrigin = '0px 0px';
+			preview_canvas.style.mozTransformOrigin = '0px 0px';
+			preview_canvas.style.msTransformOrigin = '0px 0px';
+			preview_canvas.style.oTransformOrigin = '0px 0px';
+			preview_canvas.style.transformOrigin = '0px 0px';
+			preview_canvas.style.webkitTransform = 'scaleX('+scaleX+') scaleY('+scaleY+')';
+			preview_canvas.style.mozTransform = 'scaleX('+scaleX+') scaleY('+scaleY+')';
+			preview_canvas.style.msTransform = 'scaleX('+scaleX+') scaleY('+scaleY+')';
+			preview_canvas.style.oTransform = 'scaleX('+scaleX+') scaleY('+scaleY+')';
+			preview_canvas.style.transform = 'scaleX('+scaleX+') scaleY('+scaleY+')';
+		}
+		
+		// take snapshot, but fire our own callback
+		this.snap( function() {
+			// add preview image to dom, adjust for crop
+			preview_canvas.style.position = 'relative';
+			preview_canvas.style.left = '' + self.container.scrollLeft + 'px';
+			preview_canvas.style.top = '' + self.container.scrollTop + 'px';
+			
+			self.container.insertBefore( preview_canvas, self.peg );
+			self.container.style.overflow = 'hidden';
+			
+			// set flag for user capture (use preview)
+			self.preview_active = true;
+			
+		}, preview_canvas );
+	},
+	
+	unfreeze: function() {
+		// cancel preview and resume live video feed
+		if (this.preview_active) {
+			// remove preview canvas
+			this.container.removeChild( this.preview_canvas );
+			delete this.preview_context;
+			delete this.preview_canvas;
+			
+			// unflag
+			this.preview_active = false;
+		}
+	},
+	
+	savePreview: function(user_callback, user_canvas) {
+		// save preview freeze and fire user callback
+		var params = this.params;
+		var canvas = this.preview_canvas;
+		var context = this.preview_context;
+		
+		// render to user canvas if desired
+		if (user_canvas) {
+			var user_context = user_canvas.getContext('2d');
+			user_context.drawImage( canvas, 0, 0 );
+		}
+		
+		// fire user callback if desired
+		user_callback(
+			user_canvas ? null : canvas.toDataURL('image/' + params.image_format, params.jpeg_quality / 100 ),
+			canvas,
+			context
+		);
+		
+		// remove preview
+		this.unfreeze();
+	},
+	
 	snap: function(user_callback, user_canvas) {
 		// take snapshot and return image data uri
+		var self = this;
+		var params = this.params;
+		
 		if (!this.loaded) return this.dispatch('error', "Webcam is not loaded yet");
 		if (!this.live) return this.dispatch('error', "Webcam is not live yet");
 		if (!user_callback) return this.dispatch('error', "Please provide a callback function or canvas to snap()");
+		
+		// if we have an active preview freeze, use that
+		if (this.preview_active) {
+			this.savePreview( user_callback, user_canvas );
+			return null;
+		}
 		
 		// create offscreen canvas element to hold pixels
 		var canvas = document.createElement('canvas');
@@ -290,9 +400,6 @@ var Webcam = {
 		var context = canvas.getContext('2d');
 		
 		// create inline function, called after image load (flash) or immediately (native)
-		var self = this;
-		var params = this.params;
-		
 		var func = function() {
 			// render image if needed (flash)
 			if (this.src && this.width && this.height) {

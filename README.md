@@ -15,6 +15,8 @@ Here are some live demos showcasing various features of the library:
 | [HD Demo](http://pixlcore.com/demos/webcamjs/demos/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
 | [SFX Demo](http://pixlcore.com/demos/webcamjs/demos/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
 | [Flash Demo](http://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
+| [Freeze Demo](http://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
+| **[Full Combo Demo](http://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
 
 ## Open Source
 
@@ -103,6 +105,8 @@ To snap a picture, just call the `Webcam.snap()` function, passing in a callback
 	} );
 ```
 
+[See a live demo of this here](http://pixlcore.com/demos/webcamjs/demos/basic.html)
+
 Your function is also passed a HTML5 Canvas and a 2D Context object, so you can gain access to the raw pixels instead of a compressed image Data URI.  These are passed as the 2nd and 3rd arguments to your callback function.  Example:
 
 ```javascript
@@ -169,13 +173,23 @@ This would crop a 240x240 square out of the center of the 320x240 webcam image. 
 
 [See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/crop.html)
 
+## Freezing / Previewing The Image
+
+Want to provide your users with the ability to "freeze" (i.e. preview) the image before actually saving a snapshot?  Just call `Webcam.freeze()` to freeze the current camera image.  Then call `Webcam.snap()` to save the frozen image, or call `Webcam.unfreeze()` to cancel and resume the live camera feed.
+
+The idea here is to provide a photo-booth-like experience, where the user can take a snapshot, then choose to keep or discard it, before actually calling `Webcam.snap()` to save the image.
+
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/preview.html)
+
 ## Setting an Alternate SWF Location
 
-By default WebcamJS looks for the SWF file in the same directory as the JS file.  If you are hosting the SWF in a different location, please set it using the `Webcam.setSWFLocation()` function.  Example:
+By default WebcamJS looks for the SWF file in the same directory as the JS file.  If you are hosting the SWF in a different location, please set it using the `Webcam.setSWFLocation()` function.  It should be on the same domain as your page.  Example:
 
 ```javascript
 	Webcam.setSWFLocation("/path/to/the/webcam.swf");
 ```
+
+Note that this is only used if the user's browser doesn't support HTML5 getUserMedia, and WebcamJS has to fallback to using an Adobe Flash movie to capture the camera.
 
 ## Reset (Shutdown)
 
@@ -186,6 +200,22 @@ To shut down the live camera preview and reset the system, call `Webcam.reset()`
 ```
 
 To use the library again after resetting, you must call `Webcam.attach()` and pass it your DOM element.
+
+## API Reference
+
+Here is a list of all the API function calls available in the WebcamJS library.
+
+| Method Name | Notes |
+|-------------|-------|
+| `Webcam.set()` | Set configuration parameters.  Pass a key + value, or a hash with multiple keys/values. |
+| `Webcam.on()` | Register an event listener for a given event.  Pass in the event name, and a callback function. |
+| `Webcam.setSWFLocation()` | Set an alternate location for the Adobe Flash fallback SWF file (defaults to JS location). |
+| `Webcam.attach()` | Initialize library and attach live camera to specified DOM object. |
+| `Webcam.reset()` | Shut down library and reset everything.  Must call `attach()` to use it again. |
+| `Webcam.freeze()` | Freeze the current live camera frame, allowing the user to preview before saving. |
+| `Webcam.unfreeze()` | Cancel the preview (discard image) and resume the live camera view. |
+| `Webcam.snap()` | Take a snapshot from the camera (or frozen preview image).  Pass callback function to receive data. |
+| `Webcam.upload()` | Upload a saved image to your server via binary AJAX.  Fires progress events (see below). |
 
 ## Custom Events
 
