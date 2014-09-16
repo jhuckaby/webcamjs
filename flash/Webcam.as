@@ -75,6 +75,7 @@
 									
 			if (camera != null) {
 				camera.addEventListener(ActivityEvent.ACTIVITY, activityHandler);
+				camera.addEventListener(StatusEvent.STATUS, handleCameraStatus, false, 0, true);
 				video = new Video( Math.max(video_width, dest_width), Math.max(video_height, dest_height) );
 				video.attachCamera(camera);
 				addChild(video);
@@ -113,6 +114,20 @@
 			
 			// now disable motion detection (may help reduce CPU usage)
 			camera.setMotionLevel( 100 );
+		}
+		
+		private function handleCameraStatus(e:StatusEvent):void {
+			switch (e.code) {
+				case 'Camera.Muted': {
+					trace("Camera not allowed");
+					ExternalInterface.call('Webcam.flashNotify', "error", "Access to camera denied");
+					break;
+				}
+				case 'Camera.Unmuted': {
+					trace("Camera allowed");
+					break;
+				}
+			}
 		}
 		
 		public function snap() {
