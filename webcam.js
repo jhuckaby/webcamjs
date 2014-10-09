@@ -50,6 +50,10 @@ var Webcam = {
 		uploadprogress: null,
 		error: function(msg) { alert("Webcam.js Error: " + msg); }
 	}, // callback hook functions
+    
+    cameraIDs: [], // list of IDs for atteched camera devices
+	
+    cameraID: 0, // selected camera ID, 0 by default
 	
 	init: function() {
 		// initialize, check for getUserMedia support
@@ -62,6 +66,20 @@ var Webcam = {
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
 		}
+        
+        // check the video devices connected
+        try {
+            MediaStreamTrack.getSources(function (info){
+                for(var i =0;i!=info.length;i++){
+                    var inf = info[i];
+                    if (inf.kind === 'video') {
+                        Webcam.cameraIDs.push(inf.id);
+                    }
+                }
+            });
+        } catch (e) {
+            // possible problems with MediaStreamTrack 
+        }
 	},
 	
 	attach: function(elem) {
@@ -120,13 +138,30 @@ var Webcam = {
 			// add video element to dom
 			elem.appendChild( video );
 			this.video = video;
+            
+             /**
+                Try to add cameraID to constraints UserMedia if we have devices ID on global cameraIds
+                In your code, check the lenght of Webcam.cameraIDs and select one by Webcam.cameraID 
+                (e.g. if you have 2 cameras connected, you can do: Webcam.cameraID = 1)
+            */
+            var constraints = {
+                    video: true,
+                    audio: false
+                };
+            
+            if (Webcam.cameraIDs.length > 0){
+                constraints = {
+                    video: {
+                        optional: [{sourceId: Webcam.cameraIDs[Webcam.cameraID]}]
+                    },
+                    audio: false
+                };    
+            }          
 			
 			// ask user for access to their camera
 			var self = this;
-			navigator.getUserMedia({
-				"audio": false,
-				"video": true
-			}, 
+			navigator.getUserMedia(
+                constraints,
 			function(stream) {
 				// got access, attach stream to video
 				video.src = window.URL.createObjectURL( stream ) || stream;
