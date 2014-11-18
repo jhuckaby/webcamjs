@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Example change camera device</title>
+
+
+</head>
+
+<!--<body>-->
+
+<body style="background-color: #EEEEEE">
+
+    <script src="../webcam.js"></script>
+
+    <div id="my_camera" style="width:320px; height:240px;"></div>
+    <div id="my_result"></div>
+
+    <script language="JavaScript">     
+        
+        var device = 0;
+        
+        document.addEventListener("DOMContentLoaded", function(event) {           
+            initCam();
+            document.getElementById('changeDevice').style.display = "inline";
+        });
+        
+        function initCam() {
+            Webcam.set({
+                width: 150,
+                height: 150,
+                dest_width: 150,
+                dest_height: 130,
+                image_format: 'jpeg',
+                jpeg_quality: 90,
+                force_flash: false
+            });
+  
+            Webcam.cameraID = device;
+            Webcam.attach('my_camera');
+        }
+
+        function take_snapshot() {
+            Webcam.snap(function (data_uri) {
+                document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '"/>';
+            });
+        }
+
+        function change_device() {
+            if (Webcam.on) {
+                Webcam.reset();
+            }
+            if (device == 0){
+                device = 1;
+            } else {
+                device = 0;
+            }
+            initCam();    
+        }
+    </script>
+    <p>
+        <a href="javascript:void(take_snapshot())">Take Snapshot</a>
+    </p>
+    <p>
+        <a id="changeDevice" href="javascript:void(change_device())" style="display:inline">Change Device</a>
+    </p>
+
+</body>
+
+</html>

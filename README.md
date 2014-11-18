@@ -18,11 +18,18 @@ Here are some live demos showcasing various features of the library:
 | [Freeze Demo](http://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
 | **[Full Combo Demo](http://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
 
+
 ## Open Source
 
 WebcamJS is open source, MIT licensed, and available on GitHub:
 
 https://github.com/jhuckaby/webcamjs
+
+## This Fork
+
+Makes available select camera device on mobile web browser. It works on Chrome and not so proud in FireFox.
+
+An example of this feature is in demos/select_device.html on this github.
 
 ## QuickStart Guide
 
@@ -35,6 +42,22 @@ Host the `webcam.js` and `webcam.swf` files on your web server, and drop in this
 	<div id="my_result"></div>
 
 	<script language="JavaScript">
+        // webcam settings
+        Webcam.set({
+            width: 150,
+            height: 150,
+            dest_width: 150,
+            dest_height: 130,
+            image_format: 'jpeg',
+            jpeg_quality: 90,
+            force_flash: false
+            });
+    
+        // selecting camera device
+        if (Webcam.cameraIDs.length > 1) {
+            Webcam.cameraID = 1;
+        }
+        
 		Webcam.attach( '#my_camera' );
 		
 		function take_snapshot() {

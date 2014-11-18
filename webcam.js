@@ -4,14 +4,32 @@
 // Author: Joseph Huckaby: http://github.com/jhuckaby
 // Based on JPEGCam: http://code.google.com/p/jpegcam/
 // Copyright (c) 2012 Joseph Huckaby
+// Colaboration 2014 Carlos Villanueva
 // Licensed under the MIT License
 
-/* Usage:
+/* Usage in order to selec a camera device:
 	<div id="my_camera" style="width:320px; height:240px;"></div>
 	<div id="my_result"></div>
 	
 	<script language="JavaScript">
-		Webcam.attach( '#my_camera' );
+    
+        // webcam settings
+        Webcam.set({
+            width: 150,
+            height: 150,
+            dest_width: 150,
+            dest_height: 130,
+            image_format: 'jpeg',
+            jpeg_quality: 90,
+            force_flash: false
+            });
+    
+        // selecting camera device
+        if (Webcam.cameraIDs.length > 1) {
+            Webcam.cameraID = 1;
+        }
+        
+		Webcam.attach( 'my_camera' );
 		
 		function take_snapshot() {
 			var data_uri = Webcam.snap();
@@ -50,6 +68,10 @@ var Webcam = {
 		uploadprogress: null,
 		error: function(msg) { alert("Webcam.js Error: " + msg); }
 	}, // callback hook functions
+    
+    cameraIDs: [], // list of IDs for atteched camera devices
+	
+    cameraID: 0, // selected camera ID, 0 by default
 	
 	init: function() {
 		// initialize, check for getUserMedia support
@@ -62,6 +84,20 @@ var Webcam = {
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
 		}
+        
+        // check the video devices connected
+        try {
+            MediaStreamTrack.getSources(function (info){
+                for(var i =0;i!=info.length;i++){
+                    var inf = info[i];
+                    if (inf.kind === 'video') {
+                        Webcam.cameraIDs.push(inf.id);
+                    }
+                }
+            });
+        } catch (e) {
+            // possible problems with MediaStreamTrack 
+        }
 	},
 	
 	attach: function(elem) {
@@ -120,13 +156,30 @@ var Webcam = {
 			// add video element to dom
 			elem.appendChild( video );
 			this.video = video;
+            
+             /**
+                Try to add cameraID to constraints UserMedia if we have devices ID on global cameraIds
+                In your code, check the lenght of Webcam.cameraIDs and select one by Webcam.cameraID 
+                (e.g. if you have 2 cameras connected, you can do: Webcam.cameraID = 1)
+            */
+            var constraints = {
+                    video: true,
+                    audio: false
+                };
+            
+            if (Webcam.cameraIDs.length > 0){
+                constraints = {
+                    video: {
+                        optional: [{sourceId: Webcam.cameraIDs[Webcam.cameraID]}]
+                    },
+                    audio: false
+                };    
+            }          
 			
 			// ask user for access to their camera
 			var self = this;
-			navigator.getUserMedia({
-				"audio": false,
-				"video": true
-			}, 
+			navigator.getUserMedia(
+                constraints,
 			function(stream) {
 				// got access, attach stream to video
 				video.src = window.URL.createObjectURL( stream ) || stream;
