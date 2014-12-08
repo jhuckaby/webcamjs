@@ -23,6 +23,8 @@
 	<a href="javascript:void(take_snapshot())">Take Snapshot</a>
 */
 
+(function(window) {
+
 var Webcam = {
 	version: '1.0.0',
 	
@@ -575,3 +577,13 @@ var Webcam = {
 };
 
 Webcam.init();
+
+if (typeof define === 'function' && define.amd) {
+	define(function() { return Webcam });
+} else if (typeof module === 'object' && module.exports) {
+	module.exports = Webcam;
+} else {
+	window.Webcam = Webcam;
+}
+
+}(window))
