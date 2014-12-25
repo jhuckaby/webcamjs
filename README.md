@@ -252,12 +252,15 @@ By default the `error` event shows a JavaScript alert dialog, but if you registe
 The `Webcam.snap()` function delivers your image by way of a client-side JavaScript Data URI.  The binary image data is encoded with Base64 and stuffed into the URI.  You can use this image in JavaScript and display it on your page.  However, the library also provides a way to decode and submit this image data to a server API endpoint, via binary AJAX.  Example:
 
 ```javascript
-	var data_uri = Webcam.snap();
-	
-	Webcam.upload( data_uri, 'myscript.php', function(code, text) {
-		// Upload complete!
-		// 'code' will be the HTTP response code from the server, e.g. 200
-		// 'text' will be the raw response content
+	Webcam.snap( function(data_uri) {
+		// snap complete, image data is in 'data_uri'
+		
+		Webcam.upload( data_uri, 'myscript.php', function(code, text) {
+			// Upload complete!
+			// 'code' will be the HTTP response code from the server, e.g. 200
+			// 'text' will be the raw response content
+		} );
+		
 	} );
 ```
 
@@ -288,20 +291,22 @@ Those variables will then be available to your server-side code however you woul
 If you want to track progress while your image is uploading, you can register an event listener for the `uploadProgress` event.  This event is called very frequently while an upload is in progress, and passes the function a floating point number between 0.0 and 1.0 representing the upload progress.  Here is how to use:
 
 ```javascript
-	var data_uri = Webcam.snap();
+	Webcam.snap( function(data_uri) {
 	
-	Webcam.on( 'uploadProgress', function(progress) {
-		// Upload in progress
-		// 'progress' will be between 0.0 and 1.0
+		Webcam.on( 'uploadProgress', function(progress) {
+			// Upload in progress
+			// 'progress' will be between 0.0 and 1.0
+		} );
+		
+		Webcam.on( 'uploadComplete', function(code, text) {
+			// Upload complete!
+			// 'code' will be the HTTP response code from the server, e.g. 200
+			// 'text' will be the raw response content
+		} );
+		
+		Webcam.upload( data_uri, 'myscript.php' );
+		
 	} );
-	
-	Webcam.on( 'uploadComplete', function(code, text) {
-		// Upload complete!
-		// 'code' will be the HTTP response code from the server, e.g. 200
-		// 'text' will be the raw response content
-	} );
-	
-	Webcam.upload( data_uri, 'myscript.php' );
 ```
 
 ### Including in an Existing Form
