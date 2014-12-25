@@ -586,4 +586,4 @@ if (typeof define === 'function' && define.amd) {
 	window.Webcam = Webcam;
 }
 
-}(window))
+}(window));
