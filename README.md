@@ -1,5 +1,7 @@
 # WebcamJS
 
+**Warning:** This library does not work well with HD sized images.  Flash and HTML5 GetUserMedia appear to have poor support for HD webcams, so you will often get a blurry, scaled or stretched image.  It is recommended you only use this library for smaller image captures.  Sorry!
+
 WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Adobe Flash fallback.
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
