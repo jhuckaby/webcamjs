@@ -178,10 +178,10 @@ var Webcam = {
 			delete this.video;
 		}
 		
-        if (this.container) {
-          this.container.innerHTML = '';
-          delete this.container;
-        }
+		if (this.container) {
+			this.container.innerHTML = '';
+			delete this.container;
+		}
 	
 		this.loaded = false;
 		this.live = false;
