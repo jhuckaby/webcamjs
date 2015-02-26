@@ -178,7 +178,9 @@ var Webcam = {
 			delete this.video;
 		}
 		
-		this.container.innerHTML = '';
+		if (this.container && this.container.innerHTML) {
+		        this.container.innerHTML = '';
+		}
 		delete this.container;
 		
 		this.loaded = false;
