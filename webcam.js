@@ -1,32 +1,15 @@
-// WebcamJS v1.0
+// WebcamJS v1.0.1
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
 // Based on JPEGCam: http://code.google.com/p/jpegcam/
-// Copyright (c) 2012 Joseph Huckaby
+// Copyright (c) 2012 - 2015 Joseph Huckaby
 // Licensed under the MIT License
-
-/* Usage:
-	<div id="my_camera" style="width:320px; height:240px;"></div>
-	<div id="my_result"></div>
-	
-	<script language="JavaScript">
-		Webcam.attach( '#my_camera' );
-		
-		function take_snapshot() {
-			var data_uri = Webcam.snap();
-			document.getElementById('my_result').innerHTML = 
-				'<img src="'+data_uri+'"/>';
-		}
-	</script>
-	
-	<a href="javascript:void(take_snapshot())">Take Snapshot</a>
-*/
 
 (function(window) {
 
 var Webcam = {
-	version: '1.0.0',
+	version: '1.0.1',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -42,7 +25,8 @@ var Webcam = {
 		dest_height: 0, // these default to width/height
 		image_format: 'jpeg', // image format (may be jpeg or png)
 		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
-		force_flash: false // force flash mode
+		force_flash: false, // force flash mode,
+		flip_horiz: false // flip image horiz (mirror mode)
 	},
 	
 	hooks: {
@@ -127,7 +111,12 @@ var Webcam = {
 			var self = this;
 			navigator.getUserMedia({
 				"audio": false,
-				"video": true
+				"video": {
+					mandatory: {
+						minWidth: this.params.dest_width,
+						minHeight: this.params.dest_height
+					}
+				}
 			}, 
 			function(stream) {
 				// got access, attach stream to video
@@ -137,6 +126,7 @@ var Webcam = {
 				Webcam.live = true;
 				Webcam.dispatch('load');
 				Webcam.dispatch('live');
+				Webcam.flip();
 			},
 			function(err) {
 				return self.dispatch('error', "Could not access webcam.");
@@ -304,6 +294,9 @@ var Webcam = {
 		var scaleX = this.params.width / this.params.dest_width;
 		var scaleY = this.params.height / this.params.dest_height;
 		
+		// must unflip container as preview canvas will be pre-flipped
+		this.unflip();
+		
 		// calc final size of image
 		var final_width = params.crop_width || params.dest_width;
 		var final_height = params.crop_height || params.dest_height;
@@ -358,6 +351,37 @@ var Webcam = {
 			
 			// unflag
 			this.preview_active = false;
+			
+			// re-flip if we unflipped before
+			this.flip();
+		}
+	},
+	
+	flip: function() {
+		// flip container horiz (mirror mode) if desired
+		if (this.params.flip_horiz) {
+			var sty = this.container.style;
+			sty.webkitTransform = 'scaleX(-1)';
+			sty.mozTransform = 'scaleX(-1)';
+			sty.msTransform = 'scaleX(-1)';
+			sty.oTransform = 'scaleX(-1)';
+			sty.transform = 'scaleX(-1)';
+			sty.filter = 'FlipH';
+			sty.msFilter = 'FlipH';
+		}
+	},
+	
+	unflip: function() {
+		// unflip container horiz (mirror mode) if desired
+		if (this.params.flip_horiz) {
+			var sty = this.container.style;
+			sty.webkitTransform = 'scaleX(1)';
+			sty.mozTransform = 'scaleX(1)';
+			sty.msTransform = 'scaleX(1)';
+			sty.oTransform = 'scaleX(1)';
+			sty.transform = 'scaleX(1)';
+			sty.filter = '';
+			sty.msFilter = '';
 		}
 	},
 	
@@ -404,6 +428,12 @@ var Webcam = {
 		canvas.width = this.params.dest_width;
 		canvas.height = this.params.dest_height;
 		var context = canvas.getContext('2d');
+		
+		// flip canvas horizontally if desired
+		if (this.params.flip_horiz) {
+			context.translate( params.dest_width, 0 );
+			context.scale( -1, 1 );
+		}
 		
 		// create inline function, called after image load (flash) or immediately (native)
 		var func = function() {
@@ -490,6 +520,7 @@ var Webcam = {
 				// camera is live and ready to snap
 				this.live = true;
 				this.dispatch('live');
+				this.flip();
 				break;
 
 			case 'error':

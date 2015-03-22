@@ -16,7 +16,7 @@
 	
 	<h1>WebcamJS Test Page</h1>
 	<h3>Demonstrates all features at once</h3>
-	<div style="margin-top:5px; margin-bottom:20px;">Captures large 480x480 cropped image while displaying live 240x240 preview, allows preview before save.</div>
+	<div style="margin-top:5px; margin-bottom:20px;">Captures large 480x480 cropped image while displaying live 240x240 preview, flipped horizontally (mirrored), and allows preview before save.</div>
 	
 	<div id="my_photo_booth">
 		<div id="my_camera"></div>
@@ -41,7 +41,10 @@
 				
 				// format and quality
 				image_format: 'jpeg',
-				jpeg_quality: 90
+				jpeg_quality: 90,
+				
+				// flip horizontal (mirror mode)
+				flip_horiz: true
 			});
 			Webcam.attach( '#my_camera' );
 		</script>

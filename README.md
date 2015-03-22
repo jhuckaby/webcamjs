@@ -1,7 +1,5 @@
 # WebcamJS
 
-**Warning:** This library does not work well with HD sized images.  Flash and HTML5 GetUserMedia appear to have poor support for HD webcams, so you will often get a blurry, scaled or stretched image.  It is recommended you only use this library for smaller image captures.  Sorry!
-
 WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG [Data URIs](http://en.wikipedia.org/wiki/Data_URI_scheme).  The images can then be displayed in your web page, rendered into a canvas, or submitted to your server.  WebcamJS uses [HTML5 getUserMedia](http://dev.w3.org/2011/webrtc/editor/getusermedia.html), but provides an automatic and invisible Adobe Flash fallback.
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
@@ -18,6 +16,7 @@ Here are some live demos showcasing various features of the library:
 | [SFX Demo](http://pixlcore.com/demos/webcamjs/demos/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
 | [Flash Demo](http://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
 | [Freeze Demo](http://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
+| [Mirror Demo](http://pixlcore.com/demos/webcamjs/demos/flip.html) | Demonstrates flipping the image horizontally (mirror mode). |
 | **[Full Combo Demo](http://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
 
 ## Open Source
@@ -68,6 +67,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
+| `flip_horiz` | false | Setting this to true will flip the image horizontally (mirror mode). |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -79,7 +79,8 @@ Here is an example of overriding some parameters.  Remember to call this *before
 		dest_height: 480,
 		image_format: 'jpeg',
 		jpeg_quality: 90,
-		force_flash: false
+		force_flash: false,
+		flip_horiz: true
 	});
 	
 	// Attach camera here
@@ -174,6 +175,22 @@ WebcamJS can also crop the final image for you, to any dimensions you like.  Thi
 This would crop a 240x240 square out of the center of the 320x240 webcam image.  The crop is also reflected in the live preview area.  In this case the live preview would also be cropped to 240x240, so the user can see exactly what portion of the image will be captured.
 
 [See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/crop.html)
+
+## Flipping The Image (Mirror Mode)
+
+If you want, WebcamJS can "flip" (mirror) both the live preview and captured image horizontally.  This will produce a reversed image, as if you were looking in a mirror.  To enable this optional feature, include the `flip_horiz` param, and set it to `true`.  Example:
+
+```javascript
+	Webcam.set({
+		width: 320,
+		height: 240,
+		flip_horiz: true
+	});
+	
+	// Attach camera here
+```
+
+[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/flip.html)
 
 ## Freezing / Previewing The Image
 
