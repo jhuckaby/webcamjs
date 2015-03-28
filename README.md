@@ -4,6 +4,23 @@ WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
 
+## Browser Support
+
+WebcamJS has been tested on the following browsers / operating systems:
+
+| OS | Browser | Notes |
+|----|---------|-------|
+| Mac OS X | Chrome 30+ | Works |
+| Mac OS X | Firefox 20+ | Works |
+| Mac OS X | Safari 6+ | **Requires Adobe Flash Player** |
+| Windows | Chrome 30+ | Works |
+| Windows | Firefox 20+ | Works |
+| Windows | IE 9 | **Requires Adobe Flash Player** |
+| Windows | IE 10 | **Requires Adobe Flash Player** |
+| Windows | IE 11 | **Requires Adobe Flash Player** |
+
+## Demos
+
 Here are some live demos showcasing various features of the library:
 
 | Demo Link | Description |
