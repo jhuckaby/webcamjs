@@ -1,4 +1,4 @@
-// WebcamJS v1.0.1
+// WebcamJS v1.0.2
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -9,7 +9,7 @@
 (function(window) {
 
 var Webcam = {
-	version: '1.0.1',
+	version: '1.0.2',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -229,13 +229,50 @@ var Webcam = {
 		this.swfURL = url;
 	},
 	
+	detectFlash: function() {
+		// return true if browser supports flash, false otherwise
+		// Code snippet borrowed from: https://github.com/swfobject/swfobject
+		var SHOCKWAVE_FLASH = "Shockwave Flash",
+			SHOCKWAVE_FLASH_AX = "ShockwaveFlash.ShockwaveFlash",
+        	FLASH_MIME_TYPE = "application/x-shockwave-flash",
+        	win = window,
+        	nav = navigator,
+        	hasFlash = false;
+        
+        if (typeof nav.plugins !== "undefined" && typeof nav.plugins[SHOCKWAVE_FLASH] === "object") {
+        	var desc = nav.plugins[SHOCKWAVE_FLASH].description;
+        	if (desc && (typeof nav.mimeTypes !== "undefined" && nav.mimeTypes[FLASH_MIME_TYPE] && nav.mimeTypes[FLASH_MIME_TYPE].enabledPlugin)) {
+        		hasFlash = true;
+        	}
+        }
+        else if (typeof win.ActiveXObject !== "undefined") {
+        	try {
+        		var ax = new ActiveXObject(SHOCKWAVE_FLASH_AX);
+        		if (ax) {
+        			var ver = ax.GetVariable("$version");
+        			if (ver) hasFlash = true;
+        		}
+        	}
+        	catch (e) {;}
+        }
+        
+        return hasFlash;
+	},
+	
 	getSWFHTML: function() {
 		// Return HTML for embedding flash based webcam capture movie		
 		var html = '';
 		
 		// make sure we aren't running locally (flash doesn't work)
 		if (location.protocol.match(/file/)) {
-			return '<h1 style="color:red">Sorry, the Webcam.js Flash fallback does not work from local disk.  Please upload it to a web server first.</h1>';
+			this.dispatch('error', "Flash does not work from local disk.  Please run from a web server.");
+			return '<h3 style="color:red">ERROR: the Webcam.js Flash fallback does not work from local disk.  Please run it from a web server.</h3>';
+		}
+		
+		// make sure we have flash
+		if (!this.detectFlash()) {
+			this.dispatch('error', "Adobe Flash Player not found.  Please install from get.adobe.com/flashplayer and try again.");
+			return '<h3 style="color:red">ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).</h3>';
 		}
 		
 		// set default swfURL if not explicitly set
@@ -414,7 +451,7 @@ var Webcam = {
 		var params = this.params;
 		
 		if (!this.loaded) return this.dispatch('error', "Webcam is not loaded yet");
-		if (!this.live) return this.dispatch('error', "Webcam is not live yet");
+		// if (!this.live) return this.dispatch('error', "Webcam is not live yet");
 		if (!user_callback) return this.dispatch('error', "Please provide a callback function or canvas to snap()");
 		
 		// if we have an active preview freeze, use that
