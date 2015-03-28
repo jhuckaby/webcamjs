@@ -76,7 +76,7 @@
 		
 		function preview_snapshot() {
 			// play sound effect
-			shutter.currentTime = 0;
+			try { shutter.currentTime = 0; } catch(e) {;} // fails in IE
 			shutter.play();
 			
 			// freeze camera so user can preview current frame
