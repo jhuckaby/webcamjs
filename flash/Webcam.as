@@ -38,6 +38,7 @@
 		private var bmpdata:BitmapData;
 		private var jpeg_quality:int;
 		private var image_format:String;
+		private var external_interface_method:String;
 		
 		public function Webcam() {
 			// class constructor
@@ -50,6 +51,7 @@
 			dest_height = Math.floor( flashvars.dest_height );
 			jpeg_quality = Math.floor( flashvars.jpeg_quality );
 			image_format = flashvars.image_format;
+			external_interface_method = flashvars.external_interface_method;
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			// stage.scaleMode = StageScaleMode.EXACT_FIT;
@@ -95,11 +97,11 @@
 				ExternalInterface.addCallback('_snap', snap);
 				ExternalInterface.addCallback('_configure', configure);
 								
-				ExternalInterface.call('Webcam.flashNotify', 'flashLoadComplete', true);
+				ExternalInterface.call(external_interface_method, 'flashLoadComplete', true);
 			}
 			else {
 				trace("You need a camera.");
-				ExternalInterface.call('Webcam.flashNotify', "error", "No camera was detected.");
+				ExternalInterface.call(external_interface_method, "error", "No camera was detected.");
 			}
 		}
 		
@@ -110,7 +112,7 @@
 		
 		private function activityHandler(event:ActivityEvent):void {
 			trace("activityHandler: " + event);
-			ExternalInterface.call('Webcam.flashNotify', 'cameraLive', true);
+			ExternalInterface.call(external_interface_method, 'cameraLive', true);
 			
 			// now disable motion detection (may help reduce CPU usage)
 			camera.setMotionLevel( 100 );
@@ -120,7 +122,7 @@
 			switch (e.code) {
 				case 'Camera.Muted': {
 					trace("Camera not allowed");
-					ExternalInterface.call('Webcam.flashNotify', "error", "Access to camera denied");
+					ExternalInterface.call(external_interface_method, "error", "Access to camera denied");
 					break;
 				}
 				case 'Camera.Unmuted': {

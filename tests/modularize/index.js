@@ -1,3 +1,56 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Webcam = require('../../webcam.js');
+
+function createWebcam(params){
+
+	var webcam = new Webcam(params);
+
+	// forcing flash to test the uuid flash interface
+	webcam.swfURL = "../../webcam.swf";
+
+	var webcamEl = document.createElement('div');
+	var result = document.createElement('img');
+	var button = document.createElement('button');
+
+	button.innerHTML = "snap";
+	button.addEventListener('click', function(){
+		webcam.snap( function(data_uri) {
+			result.src = data_uri;
+		} );
+	});
+
+	document.body.appendChild(result);
+	document.body.appendChild(button);
+	document.body.appendChild(webcamEl);
+
+	webcam.attach( webcamEl );
+
+};
+
+createWebcam({
+	force_flash: true,
+	width: 320,
+	height: 240,
+});
+
+createWebcam({
+	force_flash: true,
+	width: 320,
+	height: 240,
+});
+
+createWebcam({
+	width: 320,
+	height: 240
+});
+
+createWebcam({
+	width: 640,
+	height: 480
+});
+
+
+},{"../../webcam.js":2}],2:[function(require,module,exports){
 // WebcamJS v1.0.2
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
@@ -685,3 +738,5 @@ if (typeof define === 'function' && define.amd) {
 }
 
 }(window));
+
+},{}]},{},[1]);
