@@ -162,6 +162,9 @@ var Webcam = {
 		// shutdown camera, reset to potentially attach again
 		if (this.preview_active) this.unfreeze();
 		
+		// attempt to fix issue #64
+		this.unflip();
+		
 		if (this.userMedia) {
 			try { this.stream.stop(); } catch (e) {;}
 			delete this.stream;
