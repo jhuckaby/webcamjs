@@ -134,6 +134,7 @@ var Webcam = {
 		}
 		else {
 			// flash fallback
+			window.Webcam = Webcam; // needed for flash-to-js interface
 			var div = document.createElement('div');
 			div.innerHTML = this.getSWFHTML();
 			elem.appendChild( div );
