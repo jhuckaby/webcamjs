@@ -13,7 +13,7 @@ var Webcam = {
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
-	swfURL: '', // URI to webcam.swf movie (defaults to cwd)
+	swfURL: '', // URI to webcam.swf movie (defaults to the js location)
 	loaded: false, // true when webcam movie finishes loading
 	live: false, // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively

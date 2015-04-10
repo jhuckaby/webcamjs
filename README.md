@@ -44,7 +44,7 @@ https://github.com/jhuckaby/webcamjs
 
 ## QuickStart Guide
 
-Host the `webcam.js` and `webcam.swf` files on your web server, and drop in this HTML snippet:
+Host the `webcam.js` and `webcam.swf` files on your web server (both in the same directory), and drop in this HTML snippet:
 
 ```html
 	<script src="webcam.js"></script>
