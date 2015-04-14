@@ -51,8 +51,8 @@
 			jpeg_quality = Math.floor( flashvars.jpeg_quality );
 			image_format = flashvars.image_format;
 			
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			// stage.scaleMode = StageScaleMode.EXACT_FIT;
+			//stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.scaleMode = StageScaleMode.EXACT_FIT;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.stageWidth = Math.max(video_width, dest_width);
 			stage.stageHeight = Math.max(video_height, dest_height);
