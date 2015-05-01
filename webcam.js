@@ -202,6 +202,15 @@ var Webcam = {
 		if (typeof(this.hooks[name]) == 'undefined')
 			throw "Event type not supported: " + name;
 		
+		if(typeof(this.hooks[name]) === 'function') {
+			callback = (function(f1, f2) {
+				return function() {
+					f1.apply(this, arguments);
+					f2.apply(this, arguments);
+				}
+			})(this.hooks[name], callback);
+		}
+		
 		this.hooks[name] = callback;
 	},
 	
