@@ -52,11 +52,12 @@
 			image_format = flashvars.image_format;
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
-			// stage.scaleMode = StageScaleMode.EXACT_FIT;
+			// stage.scaleMode = StageScaleMode.EXACT_FIT; // Note: This breaks HD capture
+			
 			stage.align = StageAlign.TOP_LEFT;
 			stage.stageWidth = Math.max(video_width, dest_width);
 			stage.stageHeight = Math.max(video_height, dest_height);
-			
+						
 			if (flashvars.new_user) {
 				Security.showSettings( SecurityPanel.PRIVACY );
 			}
