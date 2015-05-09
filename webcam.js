@@ -113,11 +113,11 @@ var Webcam = {
 					mandatory: {
 						minWidth: this.params.dest_width,
 						minHeight: this.params.dest_height
-					},
+					}/* ,
 					frameRate: {
 						ideal: this.params.fps,
 						max: this.params.fps
-					}
+					} */
 				}
 			}, 
 			function(stream) {
