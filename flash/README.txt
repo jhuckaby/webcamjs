@@ -3,7 +3,7 @@ NOTE: You don't need anything in the "flash" directory unless you are trying to 
 BUILDING INSTRUCTIONS
 
 This library requires the AS3 Core Library (as3corelib) available from Google Code:
-	http://code.google.com/p/as3corelib/
+	https://github.com/mikechambers/as3corelib
 
 As well as the "Base64Encoder.as" file from the Adobe Flex SDK, available free from Adobe:
 	svn co http://opensource.adobe.com/svn/opensource/flex/sdk/trunk/frameworks/projects/framework

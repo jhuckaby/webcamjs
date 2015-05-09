@@ -85,6 +85,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
 | `flip_horiz` | false | Setting this to true will flip the image horizontally (mirror mode). |
+| `fps` | 30 | Set the desired fps (frames per second) capture rate. |
 
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
@@ -97,7 +98,8 @@ Here is an example of overriding some parameters.  Remember to call this *before
 		image_format: 'jpeg',
 		jpeg_quality: 90,
 		force_flash: false,
-		flip_horiz: true
+		flip_horiz: true,
+		fps: 45
 	});
 	
 	// Attach camera here

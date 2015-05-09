@@ -38,6 +38,7 @@
 		private var bmpdata:BitmapData;
 		private var jpeg_quality:int;
 		private var image_format:String;
+		private var fps:int;
 		
 		public function Webcam() {
 			// class constructor
@@ -50,6 +51,7 @@
 			dest_height = Math.floor( flashvars.dest_height );
 			jpeg_quality = Math.floor( flashvars.jpeg_quality );
 			image_format = flashvars.image_format;
+			fps = Math.floor( flashvars.fps );
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			// stage.scaleMode = StageScaleMode.EXACT_FIT; // Note: This breaks HD capture
@@ -88,7 +90,7 @@
 				
 				camera.setQuality(0, 100);
 				camera.setKeyFrameInterval(10);
-				camera.setMode( Math.max(video_width, dest_width), Math.max(video_height, dest_height), 30);
+				camera.setMode( Math.max(video_width, dest_width), Math.max(video_height, dest_height), fps );
 				
 				// only detect motion once, to determine when camera is "live"
 				camera.setMotionLevel( 1 );
