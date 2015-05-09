@@ -26,7 +26,8 @@ var Webcam = {
 		image_format: 'jpeg', // image format (may be jpeg or png)
 		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
 		force_flash: false, // force flash mode,
-		flip_horiz: false // flip image horiz (mirror mode)
+		flip_horiz: false, // flip image horiz (mirror mode)
+		fps: 30
 	},
 	
 	hooks: {}, // callback hook functions
@@ -72,6 +73,9 @@ var Webcam = {
 		// if force_flash is set, disable userMedia
 		if (this.params.force_flash) this.userMedia = null;
 		
+		// check for default fps
+		if (typeof this.params.fps !== "number") this.params.fps = 30;
+
 		// adjust scale if dest_width or dest_height is different
 		var scaleX = this.params.width / this.params.dest_width;
 		var scaleY = this.params.height / this.params.dest_height;
@@ -109,6 +113,10 @@ var Webcam = {
 					mandatory: {
 						minWidth: this.params.dest_width,
 						minHeight: this.params.dest_height
+					},
+					frameRate: {
+						ideal: this.params.fps,
+						max: this.params.fps
 					}
 				}
 			}, 
