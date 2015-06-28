@@ -13,12 +13,16 @@
       "webcam.swf"
     ]
   },
-  "homepage": "https://github.com/jhuckaby/webcamjs",
+  "homepage": "http://pixlcore.com/read/WebcamJS",
   "repository": [
     {
       "type": "git",
       "url": "https://github.com/jhuckaby/webcamjs.git"
     }
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "webcam"
+  ],
+  "author": "Joseph Huckaby"
 }
