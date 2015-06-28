@@ -1,0 +1,23 @@
+{
+  "name": "webcamjs",
+  "version": "1.0.2",
+  "description": "WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for capturing still images from your computer's camera, and delivering them to you as JPEG or PNG Data URIs. The images can then be displayed in your web page, rendered into a canvas, or submitted to your server. WebcamJS uses HTML5 getUserMedia, but provides an automatic and invisible Adobe Flash fallback.",
+  "filename": "webcam.min.js",
+  "autoupdate": {
+    "source": "git",
+    "target": "git://github.com/Jeni4/webcamjs.git",
+    "basePath": "",
+    "files": [
+      "webcam.min.js",
+      "webcam.swf"
+    ]
+  },
+  "homepage": "https://github.com/jhuckaby/webcamjs",
+  "repository": [
+    {
+      "type": "git",
+      "url": "https://github.com/jhuckaby/webcamjs.git"
+    }
+  ],
+  "license": "MIT"
+}
