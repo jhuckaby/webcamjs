@@ -5,9 +5,10 @@
   "filename": "webcam.min.js",
   "autoupdate": {
     "source": "git",
-    "target": "git://github.com/Jeni4/webcamjs.git",
+    "target": "git://github.com/jhuckaby/webcamjs.git",
     "basePath": "",
     "files": [
+	  "webcam.js"
       "webcam.min.js",
       "webcam.swf"
     ]
