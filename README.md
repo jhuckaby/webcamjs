@@ -247,9 +247,10 @@ Here is a list of all the API function calls available in the WebcamJS library.
 |-------------|-------|
 | `Webcam.set()` | Set configuration parameters.  Pass a key + value, or a hash with multiple keys/values. |
 | `Webcam.on()` | Register an event listener for a given event.  Pass in the event name, and a callback function. |
+| `Webcam.off()` | Remove an event listener for a given event.  Pass in the event name, and the callback function to remove.  Omit the callback reference to remove *all* listeners. |
 | `Webcam.setSWFLocation()` | Set an alternate location for the Adobe Flash fallback SWF file (defaults to JS location). |
 | `Webcam.attach()` | Initialize library and attach live camera to specified DOM object. |
-| `Webcam.reset()` | Shut down library and reset everything.  Must call `attach()` to use it again. |
+| `Webcam.reset()` | Shut down library and reset everything.  Must call `attach()` to use it again.  Does not remove event listeners. |
 | `Webcam.freeze()` | Freeze the current live camera frame, allowing the user to preview before saving. |
 | `Webcam.unfreeze()` | Cancel the preview (discard image) and resume the live camera view. |
 | `Webcam.snap()` | Take a snapshot from the camera (or frozen preview image).  Pass callback function to receive data. |
@@ -284,6 +285,8 @@ Example:
 ```
 
 By default the `error` event shows a JavaScript alert dialog, but if you register your own event handler this action is suppressed, and your function is called instead.
+
+Please note that WebcamJS allows multiple listeners on the same event.  So if you call `Webcam.on()` multiple times, your callback functions are all added to an array for the event, and *all* of them will be called when the event fires.  So only call `Webcam.on()` once for each listener function.  You can use `Webcam.off()` to remove listeners from an event.
 
 ## Submitting Images to a Server
 

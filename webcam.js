@@ -630,7 +630,6 @@ var Webcam = {
 	
 	upload: function(image_data_uri, target_url, callback) {
 		// submit image data to server using binary AJAX
-		if (callback) Webcam.on('uploadComplete', callback);
 		var form_elem_name = 'webcam';
 		
 		// detect image format from within image_data_uri
@@ -658,7 +657,9 @@ var Webcam = {
 		}
 		
 		// completion handler
+		var self = this;
 		http.onload = function() {
+			if (callback) callback.apply( self, [http.status, http.responseText, http.statusText] );
 			Webcam.dispatch('uploadComplete', http.status, http.responseText, http.statusText);
 		};
 		
@@ -678,7 +679,7 @@ var Webcam = {
 Webcam.init();
 
 if (typeof define === 'function' && define.amd) {
-	define( function() { return Webcam } );
+	define( function() { return Webcam; } );
 } 
 else if (typeof module === 'object' && module.exports) {
 	module.exports = Webcam;
