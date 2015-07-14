@@ -17,7 +17,7 @@ var Webcam = {
 	loaded: false, // true when webcam movie finishes loading
 	live: false, // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
-	
+	localStream: null,
 	params: {
 		width: 0,
 		height: 0,
@@ -43,6 +43,7 @@ var Webcam = {
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
 		}
+	    window.onbeforeunload = this.closeStream;
 	},
 	
 	attach: function(elem) {
@@ -129,6 +130,7 @@ var Webcam = {
 				Webcam.dispatch('load');
 				Webcam.dispatch('live');
 				Webcam.flip();
+			    self.localStream = stream;
 			},
 			function(err) {
 				return self.dispatch('error', "Could not access webcam.");
@@ -183,6 +185,13 @@ var Webcam = {
 		this.live = false;
 	},
 	
+	closeStream: function() {
+	  if (Webcam.localStream != null) {
+		Webcam.localStream.stop();
+		Webcam.localStream = null;
+	  }
+	},
+
 	set: function() {
 		// set one or more params
 		// variable argument list: 1 param = hash, 2 params = key, value
