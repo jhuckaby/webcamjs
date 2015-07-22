@@ -6,6 +6,9 @@
 	"homepage": "https://github.com/jhuckaby/webcamjs",
 	"license": "MIT",
 	"main": "webcam.js",
+	"scripts": {
+		"build": "./build.sh"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/jhuckaby/webcamjs"
