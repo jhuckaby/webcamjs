@@ -258,12 +258,12 @@ Here is a list of all the API function calls available in the WebcamJS library.
 
 ## Custom Events
 
-WebcamJS fires a number of events you can intercept using a simple JavaScript hook system.  Events are fired when: the library is fully loaded, when the camera is live, when an error occurs, and during upload.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
+WebcamJS fires a number of events you can intercept using a simple JavaScript hook system.  Events are fired when: the library is fully loaded, when the camera is live (after user allows access), when an error occurs, and during upload.  To register an event listener, call the `Webcam.on()` function, passing an event name and callback function.  Here is a table of the available event types:
 
 | Event Name | Notes |
 |------------|-------|
 | `load` | Fires when the library finishes loading. |
-| `live` | Fires when the user's camera goes live (i.e. showing a live preview). |
+| `live` | Fires when the user's camera goes live (i.e. showing a live preview).  This will only happen after the user allows access to their camera. |
 | `error` | Fires when an error occurs (your callback function is passed an error string). |
 | `uploadProgress` | Fires repeatedly while an upload is in progress (see below). |
 | `uploadComplete` | Fires once when the upload completes (see below). |
@@ -277,6 +277,7 @@ Example:
 	
 	Webcam.on( 'live', function() {
 		// camera is live, showing preview image
+		// (and user has allowed access)
 	} );
 	
 	Webcam.on( 'error', function(err) {
