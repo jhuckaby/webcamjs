@@ -27,7 +27,8 @@ var Webcam = {
 		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
 		force_flash: false, // force flash mode,
 		flip_horiz: false, // flip image horiz (mirror mode)
-		fps: 30
+		fps: 30,
+		form_elem_name: 'webcam'
 	},
 	
 	hooks: {}, // callback hook functions
@@ -630,7 +631,7 @@ var Webcam = {
 	
 	upload: function(image_data_uri, target_url, callback) {
 		// submit image data to server using binary AJAX
-		var form_elem_name = 'webcam';
+		var form_elem_name = this.params.form_elem_name;
 		
 		// detect image format from within image_data_uri
 		var image_fmt = '';
