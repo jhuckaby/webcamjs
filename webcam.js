@@ -1,4 +1,4 @@
-// WebcamJS v1.0.2
+// WebcamJS v1.0.3
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -9,7 +9,7 @@
 (function(window) {
 
 var Webcam = {
-	version: '1.0.2',
+	version: '1.0.3',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -34,6 +34,8 @@ var Webcam = {
 	
 	init: function() {
 		// initialize, check for getUserMedia support
+		var self = this;
+		
 		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 		
@@ -42,6 +44,16 @@ var Webcam = {
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
+		}
+		
+		// Make sure media stream is closed when navigating away from page
+		if (this.userMedia) {
+			window.addEventListener( 'beforeunload', function(event) {
+				if (self.stream) {
+					self.stream.stop();
+					self.stream = null;
+				}
+			} );
 		}
 	},
 	
