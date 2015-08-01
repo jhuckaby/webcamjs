@@ -13,21 +13,22 @@ var Webcam = {
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
-	swfURL: '', // URI to webcam.swf movie (defaults to the js location)
-	loaded: false, // true when webcam movie finishes loading
-	live: false, // true when webcam is initialized and ready to snap
+	swfURL: '',      // URI to webcam.swf movie (defaults to the js location)
+	loaded: false,   // true when webcam movie finishes loading
+	live: false,     // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
 	
 	params: {
 		width: 0,
 		height: 0,
-		dest_width: 0, // size of captured image
-		dest_height: 0, // these default to width/height
+		dest_width: 0,        // size of captured image
+		dest_height: 0,       // these default to width/height
 		image_format: 'jpeg', // image format (may be jpeg or png)
-		jpeg_quality: 90, // jpeg image quality from 0 (worst) to 100 (best)
-		force_flash: false, // force flash mode,
-		flip_horiz: false, // flip image horiz (mirror mode)
-		fps: 30
+		jpeg_quality: 90,     // jpeg image quality from 0 (worst) to 100 (best)
+		force_flash: false,   // force flash mode,
+		flip_horiz: false,    // flip image horiz (mirror mode)
+		fps: 30,              // camera frames per second
+		upload_name: 'webcam' // name of file in upload post data
 	},
 	
 	hooks: {}, // callback hook functions
@@ -642,7 +643,7 @@ var Webcam = {
 	
 	upload: function(image_data_uri, target_url, callback) {
 		// submit image data to server using binary AJAX
-		var form_elem_name = 'webcam';
+		var form_elem_name = this.params.upload_name || 'webcam';
 		
 		// detect image format from within image_data_uri
 		var image_fmt = '';
