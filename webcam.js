@@ -23,6 +23,7 @@ var Webcam = {
 		height: 0,
 		dest_width: 0,        // size of captured image
 		dest_height: 0,       // these default to width/height
+		res_required: true, 	// Fail if dest_width and dest_height are not supported
 		image_format: 'jpeg', // image format (may be jpeg or png)
 		jpeg_quality: 90,     // jpeg image quality from 0 (worst) to 100 (best)
 		force_flash: false,   // force flash mode,
@@ -120,18 +121,20 @@ var Webcam = {
 			
 			// ask user for access to their camera
 			var self = this;
-			navigator.getUserMedia({
-				"audio": false,
-				"video": {
+			
+			var constraints = {};
+			if (this.params.res_required) {
+				constraints = {
 					mandatory: {
 						minWidth: this.params.dest_width,
 						minHeight: this.params.dest_height
-					}/* ,
-					frameRate: {
-						ideal: this.params.fps,
-						max: this.params.fps
-					} */
+					}
 				}
+			}
+
+			navigator.getUserMedia({
+				"audio": false,
+				"video": constraints
 			}, 
 			function(stream) {
 				// got access, attach stream to video
