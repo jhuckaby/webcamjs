@@ -387,11 +387,43 @@ Finally, in your server-side script, grab the form data as if it were a plain fo
 	if (!$result) die("Could not save image!  Check file permissions.");
 ```
 
+## Custom User Media Constraints (Advanced)
+
+The HTML5 getUserMedia API has a constraints system by which you can specify optional or mandatory requirements for the video stream.  These include things such a minimum or maximum resolution and/or framerate.  By default, WebcamJS will specify a mandatory minimum width and height, matching your `dest_width` and `dest_height` parameters.  However, if you want to customize this, you can set a `constraints` parameter using `Webcam.set()`, and pass in an object containing all the custom constraints you want.  Example:
+
+```javascript
+	Webcam.set( 'constraints', {
+		mandatory: {
+			minWidth: 1280,
+			minHeight: 720,
+			minFrameRate: 30
+		},
+		optional: [
+			{ minFrameRate: 60 }
+		]
+	} );
+```
+
+To remove the mandatory constraints and instead just specify the resolution you would prefer, you can set simple `width` and `height` properties like this:
+
+```javascript
+	Webcam.set( 'constraints', {
+		width: 1280,
+		height: 720
+	} );
+```
+
+Please call this this before calling `Webcam.attach()`.
+
+Note that some browsers may not support every possible constraint, so consult your browser's documentation and test in all your supported browsers before using this advanced feature.  For example, as of this writing Chrome 44 doesn't support framerate constraints.
+
+For more information see the [Media Capture Spec](http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-Constraints) and the [WebRTC Constraints Spec](http://tools.ietf.org/id/draft-alvestrand-constraints-resolution-00.html).
+
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2012 - 2014 Joseph Huckaby
+Copyright (c) 2012 - 2015 Joseph Huckaby
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
