@@ -141,7 +141,7 @@ var Webcam = {
 				Webcam.flip();
 			},
 			function(err) {
-				return self.dispatch('error', "Could not access webcam.");
+				return self.dispatch('error', "Could not access webcam.", err);
 			});
 		}
 		else {
