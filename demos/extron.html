@@ -302,10 +302,12 @@
 
             $(document).ready(function() {
                 var switchi =0;
-                var w = 640;
-                var h = 360;
+                var h = $("#my_camera").height();
+                var w = $("#my_camera").width();
 
                 function play () {
+                    $("#output").height( h );
+                    $("#output").width( w );
                     var out = $('#output').get(0);
                     var ot = out.getContext('2d');
                     try {
@@ -451,10 +453,12 @@
     </head>
 
     <body>
-        <div id="my_camera" style="width:320px; height:240px;"></div>
-        <div id="my_result"></div>
-
-        <canvas id="output" style="border:1px solid black; width:640px; height:360px; position:relative;"></canvas><br>
+       <div>
+            <div id="my_camera" style="border:1px solid black; width:640px; height:480px; float:left;">
+            </div>
+            <div><canvas id="output" style="border:1px solid black; width:640px; height:480px;"></canvas>
+            </div>
+        </div>
         <ul class="navlist">
             <li style="padding-left:2px;">Effects:</li>
             <li ><a href="javascript://" id="bw">Bw</a></li> <li><a href="javascript://" id="outline">Outline</a></li> <li><a href="javascript://" id="color">Color</a></li>
