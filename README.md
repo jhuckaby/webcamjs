@@ -4,6 +4,8 @@ WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
 
+Looking for a good alternative to WebcamJS?  Please check out [JpegCamera](https://github.com/amw/jpeg_camera) by [Adam Wróbel](https://github.com/amw).  It has many advanced features that WebcamJS is lacking (for example, upload multiple photos at once, retry failed uploads, CSRF tokens, make sure camera is ready), and has a very clean and object-oriented design.
+
 ## Browser Support
 
 WebcamJS has been tested on the following browsers / operating systems:
