@@ -4,6 +4,8 @@ WebcamJS is a small (~3K minified and gzipped) standalone JavaScript library for
 
 WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) project, but has been redesigned for the modern web.  Instead of relying solely on Flash and only being able to submit images directly to a server, WebcamJS delivers your images as client-side Data URIs in JavaScript, and it uses HTML5 getUserMedia where available.  Flash is only used if your browser doesn't support getUserMedia, and the fallback is handled automatically using the same API (so your code doesn't have to care).
 
+Looking for a good alternative to WebcamJS?  Please check out [JpegCamera](https://github.com/amw/jpeg_camera) by [Adam Wróbel](https://github.com/amw).  It has many advanced features that WebcamJS is lacking (for example, upload multiple photos at once, retry failed uploads, CSRF tokens, make sure camera is ready), and has a very clean and object-oriented design.
+
 ## Browser Support
 
 WebcamJS has been tested on the following browsers / operating systems:
@@ -387,11 +389,43 @@ Finally, in your server-side script, grab the form data as if it were a plain fo
 	if (!$result) die("Could not save image!  Check file permissions.");
 ```
 
+## Custom User Media Constraints (Advanced)
+
+The HTML5 getUserMedia API has a constraints system by which you can specify optional or mandatory requirements for the video stream.  These include things such a minimum or maximum resolution and/or framerate.  By default, WebcamJS will specify a mandatory minimum width and height, matching your `dest_width` and `dest_height` parameters.  However, if you want to customize this, you can set a `constraints` parameter using `Webcam.set()`, and pass in an object containing all the custom constraints you want.  Example:
+
+```javascript
+	Webcam.set( 'constraints', {
+		mandatory: {
+			minWidth: 1280,
+			minHeight: 720,
+			minFrameRate: 30
+		},
+		optional: [
+			{ minFrameRate: 60 }
+		]
+	} );
+```
+
+To remove the mandatory constraints and instead just specify the resolution you would prefer, you can set simple `width` and `height` properties like this:
+
+```javascript
+	Webcam.set( 'constraints', {
+		width: 1280,
+		height: 720
+	} );
+```
+
+Please call this this before calling `Webcam.attach()`.
+
+Note that some browsers may not support every possible constraint, so consult your browser's documentation and test in all your supported browsers before using this advanced feature.  For example, as of this writing Chrome 44 doesn't support framerate constraints.
+
+For more information see the [Media Capture Spec](http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-Constraints) and the [WebRTC Constraints Spec](http://tools.ietf.org/id/draft-alvestrand-constraints-resolution-00.html).
+
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2012 - 2014 Joseph Huckaby
+Copyright (c) 2012 - 2015 Joseph Huckaby
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

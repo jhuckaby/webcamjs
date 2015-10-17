@@ -1,4 +1,4 @@
-// WebcamJS v1.0.3
+// WebcamJS v1.0.4
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -9,7 +9,7 @@
 (function(window) {
 
 var Webcam = {
-	version: '1.0.3',
+	version: '1.0.4',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -28,7 +28,8 @@ var Webcam = {
 		force_flash: false,   // force flash mode,
 		flip_horiz: false,    // flip image horiz (mirror mode)
 		fps: 30,              // camera frames per second
-		upload_name: 'webcam' // name of file in upload post data
+		upload_name: 'webcam', // name of file in upload post data
+		constraints: null     // custom user media constraints
 	},
 	
 	hooks: {}, // callback hook functions
@@ -122,15 +123,11 @@ var Webcam = {
 			var self = this;
 			navigator.getUserMedia({
 				"audio": false,
-				"video": {
+				"video": this.params.constraints || {
 					mandatory: {
 						minWidth: this.params.dest_width,
 						minHeight: this.params.dest_height
-					}/* ,
-					frameRate: {
-						ideal: this.params.fps,
-						max: this.params.fps
-					} */
+					}
 				}
 			}, 
 			function(stream) {
@@ -144,7 +141,7 @@ var Webcam = {
 				Webcam.flip();
 			},
 			function(err) {
-				return self.dispatch('error', "Could not access webcam.");
+				return self.dispatch('error', "Could not access webcam.", err);
 			});
 		}
 		else {
