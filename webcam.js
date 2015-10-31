@@ -52,7 +52,15 @@ var Webcam = {
 		if (this.userMedia) {
 			window.addEventListener( 'beforeunload', function(event) {
 				if (self.stream) {
-					self.stream.stop();
+					if (self.stream.getVideoTracks) {
+						// get video track to call stop on it
+						var tracks = self.stream.getVideoTracks();
+						if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
+					}
+					else if (self.stream.stop) {
+						// deprecated, may be removed in future
+						self.stream.stop();
+					}
 					self.stream = null;
 				}
 			} );
