@@ -187,7 +187,7 @@ var Webcam = {
 		this.unflip();
 		
 		if (this.userMedia) {
-			try { this.stream.stop(); } catch (e) {;}
+			try { this.stream.getTracks()[0].stop(); } catch (e) {;}
 			delete this.stream;
 			delete this.video;
 		}
