@@ -51,18 +51,7 @@ var Webcam = {
 		// Make sure media stream is closed when navigating away from page
 		if (this.userMedia) {
 			window.addEventListener( 'beforeunload', function(event) {
-				if (self.stream) {
-					if (self.stream.getVideoTracks) {
-						// get video track to call stop on it
-						var tracks = self.stream.getVideoTracks();
-						if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
-					}
-					else if (self.stream.stop) {
-						// deprecated, may be removed in future
-						self.stream.stop();
-					}
-					self.stream = null;
-				}
+				self.reset();
 			} );
 		}
 	},
@@ -187,7 +176,17 @@ var Webcam = {
 		this.unflip();
 		
 		if (this.userMedia) {
-			try { this.stream.stop(); } catch (e) {;}
+			if (this.stream) {
+				if (this.stream.getVideoTracks) {
+					// get video track to call stop on it
+					var tracks = this.stream.getVideoTracks();
+					if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
+				}
+				else if (this.stream.stop) {
+					// deprecated, may be removed in future
+					this.stream.stop();
+				}
+			}
 			delete this.stream;
 			delete this.video;
 		}
