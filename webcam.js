@@ -1,4 +1,4 @@
-// WebcamJS v1.0.4
+// WebcamJS v1.0.5
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -9,7 +9,7 @@
 (function(window) {
 
 var Webcam = {
-	version: '1.0.4',
+	version: '1.0.5',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -21,15 +21,15 @@ var Webcam = {
 	params: {
 		width: 0,
 		height: 0,
-		dest_width: 0,        // size of captured image
-		dest_height: 0,       // these default to width/height
-		image_format: 'jpeg', // image format (may be jpeg or png)
-		jpeg_quality: 90,     // jpeg image quality from 0 (worst) to 100 (best)
-		force_flash: false,   // force flash mode,
-		flip_horiz: false,    // flip image horiz (mirror mode)
-		fps: 30,              // camera frames per second
+		dest_width: 0,         // size of captured image
+		dest_height: 0,        // these default to width/height
+		image_format: 'jpeg',  // image format (may be jpeg or png)
+		jpeg_quality: 90,      // jpeg image quality from 0 (worst) to 100 (best)
+		force_flash: false,    // force flash mode,
+		flip_horiz: false,     // flip image horiz (mirror mode)
+		fps: 30,               // camera frames per second
 		upload_name: 'webcam', // name of file in upload post data
-		constraints: null     // custom user media constraints
+		constraints: null      // custom user media constraints
 	},
 	
 	hooks: {}, // callback hook functions
@@ -38,10 +38,19 @@ var Webcam = {
 		// initialize, check for getUserMedia support
 		var self = this;
 		
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+		// Setup getUserMedia, with polyfill for older browsers
+		// From: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+		navigator.mediaDevices = navigator.mediaDevices || ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
+			getUserMedia: function(c) {
+				return new Promise(function(y, n) {
+					(navigator.mozGetUserMedia ||
+					navigator.webkitGetUserMedia).call(navigator, c, y, n);
+				});
+			}
+		} : null);
 		
-		this.userMedia = this.userMedia && !!navigator.getUserMedia && !!window.URL;
+		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+		this.userMedia = this.userMedia && !!navigator.mediaDevices && !!window.URL;
 		
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
@@ -118,7 +127,7 @@ var Webcam = {
 			
 			// ask user for access to their camera
 			var self = this;
-			navigator.getUserMedia({
+			navigator.mediaDevices.getUserMedia({
 				"audio": false,
 				"video": this.params.constraints || {
 					mandatory: {
@@ -126,19 +135,19 @@ var Webcam = {
 						minHeight: this.params.dest_height
 					}
 				}
-			}, 
-			function(stream) {
+			})
+			.then( function(stream) {
 				// got access, attach stream to video
 				video.src = window.URL.createObjectURL( stream ) || stream;
-				Webcam.stream = stream;
-				Webcam.loaded = true;
-				Webcam.live = true;
-				Webcam.dispatch('load');
-				Webcam.dispatch('live');
-				Webcam.flip();
-			},
-			function(err) {
-				return self.dispatch('error', "Could not access webcam.", err);
+				self.stream = stream;
+				self.loaded = true;
+				self.live = true;
+				self.dispatch('load');
+				self.dispatch('live');
+				self.flip();
+			})
+			.catch( function(err) {
+				return self.dispatch('error', "Could not access webcam: " + err.name + ": " + err.message, err);
 			});
 		}
 		else {
