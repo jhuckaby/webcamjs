@@ -39,18 +39,19 @@ var Webcam = {
 		var self = this;
 		
 		// Setup getUserMedia, with polyfill for older browsers
-		// From: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-		navigator.mediaDevices = navigator.mediaDevices || ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
-			getUserMedia: function(c) {
-				return new Promise(function(y, n) {
-					(navigator.mozGetUserMedia ||
-					navigator.webkitGetUserMedia).call(navigator, c, y, n);
-				});
-			}
+		// Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+		this.mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? 
+			navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
+				getUserMedia: function(c) {
+					return new Promise(function(y, n) {
+						(navigator.mozGetUserMedia ||
+						navigator.webkitGetUserMedia).call(navigator, c, y, n);
+					});
+				}
 		} : null);
 		
 		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-		this.userMedia = this.userMedia && !!navigator.mediaDevices && !!window.URL;
+		this.userMedia = this.userMedia && !!this.mediaDevices && !!window.URL;
 		
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
@@ -127,7 +128,7 @@ var Webcam = {
 			
 			// ask user for access to their camera
 			var self = this;
-			navigator.mediaDevices.getUserMedia({
+			this.mediaDevices.getUserMedia({
 				"audio": false,
 				"video": this.params.constraints || {
 					mandatory: {
