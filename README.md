@@ -10,7 +10,7 @@ Looking for a good alternative to WebcamJS?  Please check out [JpegCamera](https
 
 Google Chrome has made it a strict requirement that your website be secure (HTTPS) if you want to access the camera.  This change is live in Chrome version 47 and up.  So basically, if you want to use WebcamJS, you will need to host your website with SSL / HTTPS.  The only alternative is to force Flash fallback mode on Chrome, which is probably not desirable.
 
-See the Chromium docs for details: [https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features]
+See this Chromium page for details: [https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features](https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features)
 
 Note that you do not need HTTPS for localhost / 127.0.0.1.  Here is the list of rules for Chrome which unlock the camera:
 
