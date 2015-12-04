@@ -6,6 +6,25 @@ WebcamJS is based on my old [JPEGCam](https://code.google.com/p/jpegcam/) projec
 
 Looking for a good alternative to WebcamJS?  Please check out [JpegCamera](https://github.com/amw/jpeg_camera) by [Adam Wróbel](https://github.com/amw).  It has many advanced features that WebcamJS is lacking (for example, upload multiple photos at once, retry failed uploads, CSRF tokens, make sure camera is ready), and has a very clean and object-oriented design.
 
+## Important Note for Chrome 47+
+
+Google Chrome has made it a strict requirement that your website be secure (HTTPS) if you want to access the camera.  This change is live in Chrome version 47 and up.  So basically, if you want to use WebcamJS, you will need to host your website with SSL / HTTPS.  The only alternative is to force Flash fallback mode on Chrome, which is probably not desirable.
+
+See the Chromium docs for details: [https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features]
+
+Note that you do not need HTTPS for localhost / 127.0.0.1.  Here is the list of rules for Chrome which unlock the camera:
+
+| Scheme | Host | Port |
+|--------|------|------|
+| `https://` | `*` | `*` |
+| `wss://` | `*` | `*` |
+| `*` | `localhost` | `*` |
+| `*` | `*.localhost` | `*` |
+| `*` | `127/8` | `*` |
+| `*` | `::1/128` | `*` |
+| `file://` | `*` | `-` |
+| `chrome-extension://` | `*` | `-` |
+
 ## Browser Support
 
 WebcamJS has been tested on the following browsers / operating systems:
@@ -15,7 +34,7 @@ WebcamJS has been tested on the following browsers / operating systems:
 | Mac OS X | Chrome 30+ | Works |
 | Mac OS X | Firefox 20+ | Works |
 | Mac OS X | Safari 6+ | **Requires Adobe Flash Player** |
-| Windows | Chrome 30+ | Works |
+| Windows | Chrome 30+ | Works -- **Chrome 47+ requires HTTPS** |
 | Windows | Firefox 20+ | Works |
 | Windows | IE 9 | **Requires Adobe Flash Player** |
 | Windows | IE 10 | **Requires Adobe Flash Player** |
@@ -27,16 +46,16 @@ Here are some live demos showcasing various features of the library:
 
 | Demo Link | Description |
 |------|-------|
-| [Basic Demo](http://pixlcore.com/demos/webcamjs/demos/basic.html) | Demonstrates a basic 320x240 image capture. |
-| [Large Demo](http://pixlcore.com/demos/webcamjs/demos/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
-| [Crop Demo](http://pixlcore.com/demos/webcamjs/demos/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
-| [Large Crop Demo](http://pixlcore.com/demos/webcamjs/demos/crop-large.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
-| [HD Demo](http://pixlcore.com/demos/webcamjs/demos/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
-| [SFX Demo](http://pixlcore.com/demos/webcamjs/demos/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
-| [Flash Demo](http://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
-| [Freeze Demo](http://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
-| [Mirror Demo](http://pixlcore.com/demos/webcamjs/demos/flip.html) | Demonstrates flipping the image horizontally (mirror mode). |
-| **[Full Combo Demo](http://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
+| [Basic Demo](https://pixlcore.com/demos/webcamjs/demos/basic.html) | Demonstrates a basic 320x240 image capture. |
+| [Large Demo](https://pixlcore.com/demos/webcamjs/demos/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
+| [Crop Demo](https://pixlcore.com/demos/webcamjs/demos/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
+| [Large Crop Demo](https://pixlcore.com/demos/webcamjs/demos/crop-large.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
+| [HD Demo](https://pixlcore.com/demos/webcamjs/demos/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
+| [SFX Demo](https://pixlcore.com/demos/webcamjs/demos/sfx.html) | Demonstrates a camera shutter sound effect at capture time. |
+| [Flash Demo](https://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
+| [Freeze Demo](https://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
+| [Mirror Demo](https://pixlcore.com/demos/webcamjs/demos/flip.html) | Demonstrates flipping the image horizontally (mirror mode). |
+| **[Full Combo Demo](https://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
 
 ## Open Source
 
@@ -129,7 +148,7 @@ To snap a picture, just call the `Webcam.snap()` function, passing in a callback
 	} );
 ```
 
-[See a live demo of this here](http://pixlcore.com/demos/webcamjs/demos/basic.html)
+[See a live demo of this here](https://pixlcore.com/demos/webcamjs/demos/basic.html)
 
 Your function is also passed a HTML5 Canvas and a 2D Context object, so you can gain access to the raw pixels instead of a compressed image Data URI.  These are passed as the 2nd and 3rd arguments to your callback function.  Example:
 
@@ -176,7 +195,7 @@ The size of the captured JPEG / PNG image is set to match the live camera viewer
 	// Attach camera here
 ```
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/large.html)
+[See a live demo of this feature here](https://pixlcore.com/demos/webcamjs/demos/large.html)
 
 ## Cropping The Image
 
@@ -195,7 +214,7 @@ WebcamJS can also crop the final image for you, to any dimensions you like.  Thi
 
 This would crop a 240x240 square out of the center of the 320x240 webcam image.  The crop is also reflected in the live preview area.  In this case the live preview would also be cropped to 240x240, so the user can see exactly what portion of the image will be captured.
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/crop.html)
+[See a live demo of this feature here](https://pixlcore.com/demos/webcamjs/demos/crop.html)
 
 ## Flipping The Image (Mirror Mode)
 
@@ -211,7 +230,7 @@ If you want, WebcamJS can "flip" (mirror) both the live preview and captured ima
 	// Attach camera here
 ```
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/flip.html)
+[See a live demo of this feature here](https://pixlcore.com/demos/webcamjs/demos/flip.html)
 
 ## Freezing / Previewing The Image
 
@@ -219,7 +238,7 @@ Want to provide your users with the ability to "freeze" (i.e. preview) the image
 
 The idea here is to provide a photo-booth-like experience, where the user can take a snapshot, then choose to keep or discard it, before actually calling `Webcam.snap()` to save the image.
 
-[See a live demo of this feature here](http://pixlcore.com/demos/webcamjs/demos/preview.html)
+[See a live demo of this feature here](https://pixlcore.com/demos/webcamjs/demos/preview.html)
 
 ## Setting an Alternate SWF Location
 
