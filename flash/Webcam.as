@@ -97,6 +97,7 @@
 				
 				ExternalInterface.addCallback('_snap', snap);
 				ExternalInterface.addCallback('_configure', configure);
+				ExternalInterface.addCallback('_releaseCamera', releaseCamera);
 								
 				ExternalInterface.call('Webcam.flashNotify', 'flashLoadComplete', true);
 			}
@@ -110,7 +111,7 @@
 			// show configure dialog inside flash movie
 			Security.showSettings(panel);
 		}
-		
+
 		private function activityHandler(event:ActivityEvent):void {
 			trace("activityHandler: " + event);
 			ExternalInterface.call('Webcam.flashNotify', 'cameraLive', true);
@@ -174,6 +175,16 @@
 			trace("b64 string length: " + bstr.length);
 			
 			return bstr;
+		}
+
+		public function releaseCamera() {
+
+			trace("in releaseCamera(), turn off camera");
+			video.attachCamera(null);
+			video.clear();
+			camera = null;
+			removeChild(video);
+
 		}
 	}
 }

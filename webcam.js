@@ -200,7 +200,12 @@ var Webcam = {
 			delete this.stream;
 			delete this.video;
 		}
-		
+
+		if (this.userMedia !== true) {
+			// call for turn off camera in flash
+			this.getMovie()._releaseCamera();
+		}
+
 		if (this.container) {
 			this.container.innerHTML = '';
 			delete this.container;
