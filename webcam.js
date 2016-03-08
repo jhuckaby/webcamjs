@@ -6,13 +6,22 @@
 // Copyright (c) 2012 - 2015 Joseph Huckaby
 // Licensed under the MIT License
 
-(function(window) {
+(function (global, factory) {
+	if (typeof exports === 'object' && typeof module !== 'undefined') {
+		module.exports = factory();
+	} else if (typeof define === 'function' && define.amd) {
+		define(factory);
+	} else {
+		global.Webcam = factory();
+	}
+}(this, function () {
 
 var Webcam = {
 	version: '1.0.6',
-	
+
+	initialized: false,
+
 	// globals
-	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
 	swfURL: '',      // URI to webcam.swf movie (defaults to the js location)
 	loaded: false,   // true when webcam movie finishes loading
 	live: false,     // true when webcam is initialized and ready to snap
@@ -37,7 +46,10 @@ var Webcam = {
 	init: function() {
 		// initialize, check for getUserMedia support
 		var self = this;
-		
+		this.initialized = true;
+
+		this.protocol = location.protocol.match(/https/i) ? 'https' : 'http';
+
 		// Setup getUserMedia, with polyfill for older browsers
 		// Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
 		this.mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ?
@@ -67,6 +79,11 @@ var Webcam = {
 	},
 
 	attach: function(elem) {
+		// Make sure we are initialized
+		if (!this.initialized) {
+			this.init();
+		}
+
 		// create webcam preview and attach to DOM element
 		// pass in actual DOM reference, ID, or CSS selector
 		if (typeof(elem) == 'string') {
@@ -705,19 +722,9 @@ var Webcam = {
 		// send data to server
 		http.send(form);
 	}
-	
+
 };
 
-Webcam.init();
+return Webcam;
 
-if (typeof define === 'function' && define.amd) {
-	define( function() { return Webcam; } );
-} 
-else if (typeof module === 'object' && module.exports) {
-	module.exports = Webcam;
-} 
-else {
-	window.Webcam = Webcam;
-}
-
-}(window));
+}));
