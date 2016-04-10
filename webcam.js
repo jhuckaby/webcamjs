@@ -7,13 +7,13 @@
 // Licensed under the MIT License
 
 (function(window) {
+var _userMedia;
 
 var Webcam = {
 	version: '1.0.6',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
-	swfURL: '',      // URI to webcam.swf movie (defaults to the js location)
 	loaded: false,   // true when webcam movie finishes loading
 	live: false,     // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
@@ -29,7 +29,9 @@ var Webcam = {
 		flip_horiz: false,     // flip image horiz (mirror mode)
 		fps: 30,               // camera frames per second
 		upload_name: 'webcam', // name of file in upload post data
-		constraints: null      // custom user media constraints
+		constraints: null,     // custom user media constraints,
+		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
+		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).'
 	},
 	
 	hooks: {}, // callback hook functions
@@ -91,8 +93,12 @@ var Webcam = {
 		if (!this.params.dest_width) this.params.dest_width = this.params.width;
 		if (!this.params.dest_height) this.params.dest_height = this.params.height;
 		
+		this.userMedia = _userMedia === undefined ? this.userMedia : _userMedia;
 		// if force_flash is set, disable userMedia
-		if (this.params.force_flash) this.userMedia = null;
+		if (this.params.force_flash) {
+			_userMedia = this.userMedia;
+			this.userMedia = null
+		}
 		
 		// check for default fps
 		if (typeof this.params.fps !== "number") this.params.fps = 30;
@@ -282,11 +288,12 @@ var Webcam = {
 		
 		return false; // no hook defined
 	},
-	
-	setSWFLocation: function(url) {
-		// set location of SWF movie (defaults to webcam.swf in cwd)
-		this.swfURL = url;
+
+	setSWFLocation: function(value) {
+		// for backward compatibility.
+		this.set('swfURL', value);
 	},
+	
 	
 	detectFlash: function() {
 		// return true if browser supports flash, false otherwise
@@ -320,7 +327,8 @@ var Webcam = {
 	
 	getSWFHTML: function() {
 		// Return HTML for embedding flash based webcam capture movie		
-		var html = '';
+		var html = '',
+			swfURL = this.params.swfURL;
 		
 		// make sure we aren't running locally (flash doesn't work)
 		if (location.protocol.match(/file/)) {
@@ -331,11 +339,11 @@ var Webcam = {
 		// make sure we have flash
 		if (!this.detectFlash()) {
 			this.dispatch('error', "Adobe Flash Player not found.  Please install from get.adobe.com/flashplayer and try again.");
-			return '<h3 style="color:red">ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).</h3>';
+			return '<h3 style="color:red">' + this.params.flashNotDetectedText + '</h3>';
 		}
 		
 		// set default swfURL if not explicitly set
-		if (!this.swfURL) {
+		if (!swfURL) {
 			// find our script tag, and use that base URL
 			var base_url = '';
 			var scpts = document.getElementsByTagName('script');
@@ -346,8 +354,8 @@ var Webcam = {
 					idx = len;
 				}
 			}
-			if (base_url) this.swfURL = base_url + '/webcam.swf';
-			else this.swfURL = 'webcam.swf';
+			if (base_url) swfURL = base_url + '/webcam.swf';
+			else swfURL = 'webcam.swf';
 		}
 		
 		// if this is the user's first visit, set flashvar so flash privacy settings panel is shown first
@@ -364,7 +372,7 @@ var Webcam = {
 		}
 		
 		// construct object/embed tag
-		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+this.swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
+		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
 		
 		return html;
 	},
