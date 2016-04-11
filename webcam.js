@@ -8,12 +8,16 @@
 
 (function(window) {
 var _userMedia;
+var protocol = location.protocol.match(/https/i) ? 'https' : 'http';
+var FLASH_EMBED_ID = 'webcam_movie_embed';
+var FLASH_OBJ_ID = 'webcam_movie_obj';
 
+var URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+var localStorage = window.localStorage;
 var Webcam = {
 	version: '1.0.6',
 	
 	// globals
-	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
 	loaded: false,   // true when webcam movie finishes loading
 	live: false,     // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
@@ -52,8 +56,7 @@ var Webcam = {
 				}
 		} : null);
 		
-		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-		this.userMedia = this.userMedia && !!this.mediaDevices && !!window.URL;
+		this.userMedia = this.userMedia && !!this.mediaDevices && !!URL;
 		
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
@@ -97,7 +100,7 @@ var Webcam = {
 		// if force_flash is set, disable userMedia
 		if (this.params.force_flash) {
 			_userMedia = this.userMedia;
-			this.userMedia = null
+			this.userMedia = null;
 		}
 		
 		// check for default fps
@@ -145,7 +148,7 @@ var Webcam = {
 			})
 			.then( function(stream) {
 				// got access, attach stream to video
-				video.src = window.URL.createObjectURL( stream ) || stream;
+				video.src = URL.createObjectURL( stream ) || stream;
 				self.stream = stream;
 				self.loaded = true;
 				self.live = true;
@@ -156,8 +159,7 @@ var Webcam = {
 			.catch( function(err) {
 				return self.dispatch('error', "Could not access webcam: " + err.name + ": " + err.message, err);
 			});
-		}
-		else {
+		} else {
 			// flash fallback
 			window.Webcam = Webcam; // needed for flash-to-js interface
 			var div = document.createElement('div');
@@ -176,8 +178,7 @@ var Webcam = {
 			
 			elem.scrollLeft = Math.floor( (this.params.width / 2) - (scaled_crop_width / 2) );
 			elem.scrollTop = Math.floor( (this.params.height / 2) - (scaled_crop_height / 2) );
-		}
-		else {
+		} else {
 			// no crop, set size to desired
 			elem.style.width = '' + this.params.width + 'px';
 			elem.style.height = '' + this.params.height + 'px';
@@ -197,8 +198,7 @@ var Webcam = {
 					// get video track to call stop on it
 					var tracks = this.stream.getVideoTracks();
 					if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
-				}
-				else if (this.stream.stop) {
+				} else if (this.stream.stop) {
 					// deprecated, may be removed in future
 					this.stream.stop();
 				}
@@ -228,8 +228,7 @@ var Webcam = {
 			for (var key in arguments[0]) {
 				this.params[key] = arguments[0][key];
 			}
-		}
-		else {
+		} else {
 			this.params[ arguments[0] ] = arguments[1];
 		}
 	},
@@ -249,8 +248,7 @@ var Webcam = {
 				// remove one selected callback from list
 				var idx = this.hooks[name].indexOf(callback);
 				if (idx > -1) this.hooks[name].splice(idx, 1);
-			}
-			else {
+			} else {
 				// no callback specified, so clear all
 				this.hooks[name] = [];
 			}
@@ -269,19 +267,16 @@ var Webcam = {
 				if (typeof(hook) == 'function') {
 					// callback is function reference, call directly
 					hook.apply(this, args);
-				}
-				else if ((typeof(hook) == 'object') && (hook.length == 2)) {
+				} else if ((typeof(hook) == 'object') && (hook.length == 2)) {
 					// callback is PHP-style object instance method
 					hook[0][hook[1]].apply(hook[0], args);
-				}
-				else if (window[hook]) {
+				} else if (window[hook]) {
 					// callback is global function name
 					window[ hook ].apply(window, args);
 				}
 			} // loop
 			return true;
-		}
-		else if (name == 'error') {
+		} else if (name == 'error') {
 			// default error handler if no custom one specified
 			alert("Webcam.js Error: " + args[0]);
 		}
@@ -295,34 +290,31 @@ var Webcam = {
 	},
 	
 	
-	detectFlash: function() {
+	hasFlash: function() {
 		// return true if browser supports flash, false otherwise
 		// Code snippet borrowed from: https://github.com/swfobject/swfobject
 		var SHOCKWAVE_FLASH = "Shockwave Flash",
 			SHOCKWAVE_FLASH_AX = "ShockwaveFlash.ShockwaveFlash",
-        	FLASH_MIME_TYPE = "application/x-shockwave-flash",
-        	win = window,
-        	nav = navigator,
-        	hasFlash = false;
-        
-        if (typeof nav.plugins !== "undefined" && typeof nav.plugins[SHOCKWAVE_FLASH] === "object") {
-        	var desc = nav.plugins[SHOCKWAVE_FLASH].description;
-        	if (desc && (typeof nav.mimeTypes !== "undefined" && nav.mimeTypes[FLASH_MIME_TYPE] && nav.mimeTypes[FLASH_MIME_TYPE].enabledPlugin)) {
-        		hasFlash = true;
-        	}
-        }
-        else if (typeof win.ActiveXObject !== "undefined") {
-        	try {
-        		var ax = new ActiveXObject(SHOCKWAVE_FLASH_AX);
-        		if (ax) {
-        			var ver = ax.GetVariable("$version");
-        			if (ver) hasFlash = true;
-        		}
-        	}
-        	catch (e) {;}
-        }
-        
-        return hasFlash;
+			FLASH_MIME_TYPE = "application/x-shockwave-flash",
+			nav = navigator,
+			hasFlash = false;
+
+		if (typeof nav.plugins !== "undefined" && typeof nav.plugins[SHOCKWAVE_FLASH] === "object") {
+			var desc = nav.plugins[SHOCKWAVE_FLASH].description;
+			if (desc && (typeof nav.mimeTypes !== "undefined" && nav.mimeTypes[FLASH_MIME_TYPE] && nav.mimeTypes[FLASH_MIME_TYPE].enabledPlugin)) {
+				hasFlash = true;
+			}
+		} else if (typeof window.ActiveXObject !== "undefined") {
+			try {
+				var ax = new ActiveXObject(SHOCKWAVE_FLASH_AX);
+				if (ax) {
+					var ver = ax.GetVariable("$version");
+					if (ver) hasFlash = true;
+				}
+			} catch (e) {}
+		}
+
+		return hasFlash;
 	},
 	
 	getSWFHTML: function() {
@@ -337,7 +329,7 @@ var Webcam = {
 		}
 		
 		// make sure we have flash
-		if (!this.detectFlash()) {
+		if (!this.hasFlash()) {
 			this.dispatch('error', "Adobe Flash Player not found.  Please install from get.adobe.com/flashplayer and try again.");
 			return '<h3 style="color:red">' + this.params.flashNotDetectedText + '</h3>';
 		}
@@ -354,14 +346,16 @@ var Webcam = {
 					idx = len;
 				}
 			}
-			if (base_url) swfURL = base_url + '/webcam.swf';
-			else swfURL = 'webcam.swf';
+			swfURL = 'webcam.swf';
+			if (base_url) {
+				swfURL = base_url + '/' + swfURL;
+			}
 		}
 		
 		// if this is the user's first visit, set flashvar so flash privacy settings panel is shown first
-		if (window.localStorage && !localStorage.getItem('visited')) {
+		if (localStorage && !localStorage.getItem('webcamjs_visited')) {
 			this.params.new_user = 1;
-			localStorage.setItem('visited', 1);
+			localStorage.setItem('webcamjs_visited', 1);
 		}
 		
 		// construct flashvars string
@@ -372,7 +366,7 @@ var Webcam = {
 		}
 		
 		// construct object/embed tag
-		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+this.protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="webcam_movie_embed" src="'+swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
+		html += '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+protocol+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="'+FLASH_OBJ_ID+'" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+flashvars+'"/><embed id="'+FLASH_EMBED_ID+'" src="'+swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'" name="'+FLASH_EMBED_ID+'" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'"></embed></object>';
 		
 		return html;
 	},
@@ -380,8 +374,8 @@ var Webcam = {
 	getMovie: function() {
 		// get reference to movie object/embed in DOM
 		if (!this.loaded) return this.dispatch('error', "Flash Movie is not loaded yet");
-		var movie = document.getElementById('webcam_movie_obj');
-		if (!movie || !movie._snap) movie = document.getElementById('webcam_movie_embed');
+		var movie = document.getElementById(FLASH_OBJ_ID);
+		if (!movie || !movie._snap) movie = document.getElementById(FLASH_EMBED_ID);
 		if (!movie) this.dispatch('error', "Cannot locate Flash movie in DOM");
 		return movie;
 	},
@@ -590,8 +584,7 @@ var Webcam = {
 			
 			// fire callback right away
 			func();
-		}
-		else {
+		} else {
 			// flash fallback
 			var raw_data = this.getMovie()._snap();
 			
@@ -712,6 +705,8 @@ var Webcam = {
 		
 		// send data to server
 		http.send(form);
+
+		return http;
 	}
 	
 };
@@ -720,11 +715,9 @@ Webcam.init();
 
 if (typeof define === 'function' && define.amd) {
 	define( function() { return Webcam; } );
-} 
-else if (typeof module === 'object' && module.exports) {
+} else if (typeof module === 'object' && module.exports) {
 	module.exports = Webcam;
-} 
-else {
+} else {
 	window.Webcam = Webcam;
 }
 
