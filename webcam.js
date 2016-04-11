@@ -356,7 +356,7 @@ var Webcam = {
 		// make sure we have flash
 		if (!this.hasFlash()) {
 			this.dispatch('error', "Adobe Flash Player not found.  Please install from get.adobe.com/flashplayer and try again.");
-			return '<h3 style="'+this.params.css_prefix+'__error">' + this.params.flashNotDetectedText + '</h3>';
+			return '<h3 class="'+this.params.css_prefix+'__error">' + this.params.flashNotDetectedText + '</h3>';
 		}
 		
 		// set default swfURL if not explicitly set
