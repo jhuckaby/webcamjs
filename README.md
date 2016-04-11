@@ -109,6 +109,8 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `fps` | 30 | Set the desired fps (frames per second) capture rate. |
 | `swfURL` | "./webcam.swf" | Set an alternate location for the Adobe Flash fallback SWF file
 | `flashNotDetectedText` | "ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours)." | text/html for flash player not detected.
+| `enable_upload_fallback` | true | Enable "file upload" fallback for case, when both: HTML5 and Flash doesn't work. This may be helpful on iPhone Safari and MacOS Safari.
+| `css_prefix` | 'webcamjs' | Prefix for webcamjs classNames
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
 ```javascript
