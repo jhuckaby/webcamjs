@@ -156,7 +156,7 @@ Your function is also passed a HTML5 Canvas and a 2D Context object, so you can 
 ```javascript
 	Webcam.snap( function(data_uri, canvas, context) {
 		// copy image to my own canvas
-		myContext.drawImage( context, 0, 0 );
+		myContext.drawImage( canvas, 0, 0 );
 	} );
 ```
 
