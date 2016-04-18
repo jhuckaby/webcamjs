@@ -136,11 +136,9 @@ var Webcam = {
 			var self = this;
 			this.mediaDevices.getUserMedia({
 				"audio": false,
-				"video": this.params.constraints || {
-					mandatory: {
-						minWidth: this.params.dest_width,
-						minHeight: this.params.dest_height
-					}
+				"video": {
+					width: this.params.dest_width,
+					height: this.params.dest_height
 				}
 			})
 			.then( function(stream) {
