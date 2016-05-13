@@ -772,9 +772,12 @@ function drawImageScaled(img, ctx) {
 
 function handleImageInput(e) {
 	// http://jsfiddle.net/influenztial/qy7h5/
-	var reader = new FileReader();
-	var self = this;
 	var rawFile = e.target.files[0];
+	if (!rawFile) {
+		return;
+	}
+	var self = this;
+	var reader = new FileReader();
 	reader.onload = function(event) {
 		var img = new Image();
 		img.onload = function() {
