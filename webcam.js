@@ -41,7 +41,7 @@ var Webcam = {
 		constraints: null,     // custom user media constraints,
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
-		enable_upload_fallback: true,
+		enable_file_fallback: true,
 		css_prefix: 'webcamjs' // prefix for all css classes
 	},
 	
@@ -160,7 +160,7 @@ var Webcam = {
 				return self.dispatch('error', "Could not access webcam: " + err.name + ": " + err.message, err);
 			});
 		}
-		else if (!this.detectFlash() && this.params.enable_upload_fallback) {
+		else if (!this.detectFlash() && this.params.enable_file_fallback) {
 			elem.appendChild( this.getUploadFallbackNode() );
 		}
 		else {
@@ -620,7 +620,7 @@ var Webcam = {
 			img.onload = func;
 			img.src = 'data:image/'+this.params.image_format+';base64,' + raw_data;
 		}
-		else if (this.params.enable_upload_fallback) {
+		else if (this.params.enable_file_fallback) {
 			if (this.fallbackImage) {
 				drawImageScaled(this.fallbackImage.data, context);
 				func();
