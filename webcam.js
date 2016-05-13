@@ -33,7 +33,8 @@ var Webcam = {
 		dest_height: 0,        // these default to width/height
 		image_format: 'jpeg',  // image format (may be jpeg or png)
 		jpeg_quality: 90,      // jpeg image quality from 0 (worst) to 100 (best)
-		force_flash: false,    // force flash mode,
+		force_flash: false,    // force flash mode
+		force_file: false,     // force file upload mode
 		flip_horiz: false,     // flip image horiz (mirror mode)
 		fps: 30,               // camera frames per second
 		upload_name: 'webcam', // name of file in upload post data
@@ -105,7 +106,7 @@ var Webcam = {
 		
 		this.userMedia = _userMedia === undefined ? this.userMedia : _userMedia;
 		// if force_flash is set, disable userMedia
-		if (this.params.force_flash) {
+		if (this.params.force_flash || this.params.force_file) {
 			_userMedia = this.userMedia;
 			this.userMedia = null;
 		}
@@ -314,6 +315,9 @@ var Webcam = {
 	},
 	
 	detectFlash: function() {
+		if (this.params.force_file) {
+			return false;
+		}
 		// return true if browser supports flash, false otherwise
 		// Code snippet borrowed from: https://github.com/swfobject/swfobject
 		var SHOCKWAVE_FLASH = "Shockwave Flash",
@@ -759,7 +763,7 @@ function drawImageScaled(img, ctx) {
 	var canvas = ctx.canvas;
 	var hRatio = canvas.width / img.width;
 	var vRatio =  canvas.height / img.height;
-	var ratio  = Math.min ( hRatio, vRatio );
+	var ratio  = Math.min( hRatio, vRatio );
 	var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
 	var centerShift_y = ( canvas.height - img.height*ratio ) / 2;
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -770,6 +774,7 @@ function handleImageInput(e) {
 	// http://jsfiddle.net/influenztial/qy7h5/
 	var reader = new FileReader();
 	var self = this;
+	var rawFile = e.target.files[0];
 	reader.onload = function(event) {
 		var img = new Image();
 		img.onload = function() {
@@ -778,10 +783,12 @@ function handleImageInput(e) {
 				width: img.width,
 				height: img.height
 			};
+
+			self.dispatch('imageSelected', rawFile);
 		};
 		img.src = event.target.result;
 	};
-	reader.readAsDataURL(e.target.files[0]);
+	reader.readAsDataURL(rawFile);
 }
 
 function capitalizeFirstLetter(string) {

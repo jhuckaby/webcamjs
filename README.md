@@ -105,6 +105,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
+| `force_file` | false | Force file upload mode |
 | `flip_horiz` | false | Setting this to true will flip the image horizontally (mirror mode). |
 | `fps` | 30 | Set the desired fps (frames per second) capture rate. |
 | `swfURL` | "./webcam.swf" | Set an alternate location for the Adobe Flash fallback SWF file
@@ -292,6 +293,7 @@ WebcamJS fires a number of events you can intercept using a simple JavaScript ho
 | `error` | Fires when an error occurs (your callback function is passed an error string). |
 | `uploadProgress` | Fires repeatedly while an upload is in progress (see below). |
 | `uploadComplete` | Fires once when the upload completes (see below). |
+| `imageSelected` | Fires once user selects file in file upload fallback. |
 
 Example:
 
