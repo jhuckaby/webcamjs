@@ -39,6 +39,7 @@
 		private var jpeg_quality:int;
 		private var image_format:String;
 		private var fps:int;
+		private var flip_horiz:Boolean;
 		
 		public function Webcam() {
 			// class constructor
@@ -52,6 +53,7 @@
 			jpeg_quality = Math.floor( flashvars.jpeg_quality );
 			image_format = flashvars.image_format;
 			fps = Math.floor( flashvars.fps );
+			flip_horiz = flashvars.flip_horiz == "true";
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			// stage.scaleMode = StageScaleMode.EXACT_FIT; // Note: This breaks HD capture
@@ -86,6 +88,11 @@
 				if ((video_width < dest_width) && (video_height < dest_height)) {
 					video.scaleX = video_width / dest_width;
 					video.scaleY = video_height / dest_height;
+				}
+
+				if (flip_horiz) {
+					video.scaleX *= -1;
+					video.x = video.width + video.x;
 				}
 				
 				camera.setQuality(0, 100);

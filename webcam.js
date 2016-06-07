@@ -660,7 +660,6 @@ var Webcam = {
 				// camera is live and ready to snap
 				this.live = true;
 				this.dispatch('live');
-				this.flip();
 				break;
 
 			case 'error':
