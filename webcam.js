@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.6',
+	version: '1.0.7',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -117,6 +117,11 @@ var Webcam = {
 		// set width/height if not already set
 		if (!this.params.width) this.params.width = elem.offsetWidth;
 		if (!this.params.height) this.params.height = elem.offsetHeight;
+		
+		// make sure we have a nonzero width and height at this point
+		if (!this.params.width || !this.params.height) {
+			return this.dispatch('error', new WebcamError("No width and/or height for webcam.  Please call set() first, or attach to a visible element."));
+		}
 		
 		// set defaults for dest_width / dest_height if not set
 		if (!this.params.dest_width) this.params.dest_width = this.params.width;
