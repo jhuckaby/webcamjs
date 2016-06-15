@@ -1,4 +1,4 @@
-// WebcamJS v1.0.6
+// WebcamJS v1.0.8
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.7',
+	version: '1.0.8',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -319,8 +319,8 @@ var Webcam = {
 			if ((args[0] instanceof FlashError) || (args[0] instanceof WebcamError)) {
 				message = args[0].message;
 			} else {
-				message = "Could not access webcam: " + err.name + ": " + 
-					err.message + " " + err.toString();
+				message = "Could not access webcam: " + args[0].name + ": " + 
+					args[0].message + " " + args[0].toString();
 			}
 
 			// default error handler if no custom one specified
@@ -334,7 +334,6 @@ var Webcam = {
 		// for backward compatibility.
 		this.set('swfURL', value);
 	},
-	
 	
 	detectFlash: function() {
 		// return true if browser supports flash, false otherwise
