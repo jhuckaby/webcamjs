@@ -109,6 +109,7 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `fps` | 30 | Set the desired fps (frames per second) capture rate. |
 | `swfURL` | "./webcam.swf" | Set an alternate location for the Adobe Flash fallback SWF file
 | `flashNotDetectedText` | "ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours)." | text/html for flash player not detected.
+| `unfreeze_snap` | true | Whether to unfreeze the camera after snap (defaults to true)
 Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
 
 ```javascript

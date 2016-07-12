@@ -55,7 +55,8 @@ var Webcam = {
 		upload_name: 'webcam', // name of file in upload post data
 		constraints: null,     // custom user media constraints,
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
-		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).'
+		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
+		unfreeze_snap: true    // Whether to unfreeze the camera after snap (defaults to true)
 	},
 
 	errors: {
@@ -551,7 +552,7 @@ var Webcam = {
 		);
 		
 		// remove preview
-		this.unfreeze();
+		if (this.params.unfreeze_snap) this.unfreeze();
 	},
 	
 	snap: function(user_callback, user_canvas) {
