@@ -198,6 +198,7 @@ var Webcam = {
 		}
 		else if (!this.detectFlash() && this.params.enable_file_fallback) {
 			elem.appendChild( this.getUploadFallbackNode() );
+			this.loaded = true;
 		}
 		else {
 			// flash fallback
