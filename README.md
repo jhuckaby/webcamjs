@@ -280,7 +280,6 @@ Here is a list of all the API function calls available in the WebcamJS library.
 | `Webcam.snap()` | Take a snapshot from the camera (or frozen preview image).  Pass callback function to receive data. |
 | `Webcam.upload()` | Upload a saved image to your server via binary AJAX.  Fires progress events (see below). |
 | `Webcam.detectFlash()` | return true if browser supports flash, false otherwise. |
-| `Webcam.hasUserMedia(true)` | Checks if HTML5 video is supported. When `true` is not passed may return fake value in combination with `force_flash` option |
 
 ## Custom Events
 
