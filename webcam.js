@@ -437,7 +437,12 @@ var Webcam = {
 		// if this is the user's first visit, set flashvar so flash privacy settings panel is shown first
 		if (localStorage && !localStorage.getItem('webcamjs_visited')) {
 			this.params.new_user = 1;
-			localStorage.setItem('webcamjs_visited', 1);
+			try {
+				// Safari Private mode does not allow to write any data in localStorage.
+				// Exception is thrown instead.
+				localStorage.setItem('webcamjs_visited', 1);
+			}
+			catch (e) {}
 		}
 		
 		// construct flashvars string
