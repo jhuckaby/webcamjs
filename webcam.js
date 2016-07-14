@@ -531,7 +531,7 @@ var Webcam = {
 		}
 	},
 	
-	savePreview: function(user_callback, user_canvas) {
+	savePreview: function(user_callback, user_canvas, keepfrozen) {
 		// save preview freeze and fire user callback
 		var params = this.params;
 		var canvas = this.preview_canvas;
@@ -550,11 +550,13 @@ var Webcam = {
 			context
 		);
 		
-		// remove preview
-		this.unfreeze();
+		if(!keepfrozen) {
+			// remove preview
+			this.unfreeze();
+		}
 	},
 	
-	snap: function(user_callback, user_canvas) {
+	snap: function(user_callback, user_canvas, keepFrozen) {
 		// take snapshot and return image data uri
 		var self = this;
 		var params = this.params;
@@ -565,7 +567,7 @@ var Webcam = {
 		
 		// if we have an active preview freeze, use that
 		if (this.preview_active) {
-			this.savePreview( user_callback, user_canvas );
+			this.savePreview( user_callback, user_canvas, keepFrozen );
 			return null;
 		}
 		
