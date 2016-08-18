@@ -56,7 +56,8 @@ var Webcam = {
 		constraints: null,     // custom user media constraints,
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
-		unfreeze_snap: true    // Whether to unfreeze the camera after snap (defaults to true)
+		unfreeze_snap: true,   // Whether to unfreeze the camera after snap (defaults to true)
+		swfEnabled: true       // Whether to use Flash fallback
 	},
 
 	errors: {
@@ -201,7 +202,7 @@ var Webcam = {
 				}
 			});
 		}
-		else {
+		else if (this.params.swfEnabled) {
 			// flash fallback
 			window.Webcam = Webcam; // needed for flash-to-js interface
 			var div = document.createElement('div');
@@ -346,6 +347,7 @@ var Webcam = {
 	},
 	
 	detectFlash: function() {
+        if (!this.params.swfEnabled) return false;
 		// return true if browser supports flash, false otherwise
 		// Code snippet borrowed from: https://github.com/swfobject/swfobject
 		var SHOCKWAVE_FLASH = "Shockwave Flash",
@@ -379,6 +381,8 @@ var Webcam = {
 		// Return HTML for embedding flash based webcam capture movie		
 		var html = '',
 			swfURL = this.params.swfURL;
+
+        if (!this.params.swfEnabled) return html;
 		
 		// make sure we aren't running locally (flash doesn't work)
 		if (location.protocol.match(/file/)) {
