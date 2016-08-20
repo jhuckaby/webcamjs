@@ -104,13 +104,22 @@ If you want to override the default settings, just call `Webcam.set()` and pass 
 | `crop_height` | (Disabled) | Height of the final cropped image in pixels, defaults to `dest_height`. |
 | `image_format` | jpeg | Desired image format of captured image, may be "jpeg" or "png". |
 | `jpeg_quality` | 90 | For JPEG images, this is the desired quality, from 0 (worst) to 100 (best). |
+| `enable_flash` | true | Enable or disable Flash fallback, if there is no native webcam access. |
 | `force_flash` | false | Setting this to true will always run in Adobe Flash fallback mode. |
 | `flip_horiz` | false | Setting this to true will flip the image horizontally (mirror mode). |
 | `fps` | 30 | Set the desired fps (frames per second) capture rate. |
 | `swfURL` | "./webcam.swf" | Set an alternate location for the Adobe Flash fallback SWF file
 | `flashNotDetectedText` | "ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours)." | text/html for flash player not detected.
 | `unfreeze_snap` | true | Whether to unfreeze the camera after snap (defaults to true)
-Here is an example of overriding some parameters.  Remember to call this *before* you attach the viewer.
+| `upload_name` | "webcam" | Which HTTP POST parameter name to use when uploading the webcam image file.
+
+Here is an example of overriding a single parameter.  Remember to call this *before* you attach the viewer.
+
+```js
+	Webcam.set('flip_horiz', true);
+```
+
+You can also set multiple parameters at once by passing in an object, like this:
 
 ```javascript
 	Webcam.set({
