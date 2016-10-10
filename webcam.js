@@ -1,9 +1,9 @@
-// WebcamJS v1.0.9
+// WebcamJS v1.0.16
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
 // Based on JPEGCam: http://code.google.com/p/jpegcam/
-// Copyright (c) 2012 - 2015 Joseph Huckaby
+// Copyright (c) 2012 - 2016 Joseph Huckaby
 // Licensed under the MIT License
 
 (function(window) {
@@ -43,7 +43,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.9',
+	version: '1.0.16',
 	
 	// globals
 	loaded: false,   // true when webcam movie finishes loading
@@ -57,6 +57,7 @@ var Webcam = {
 		dest_height: 0,        // these default to width/height
 		image_format: 'jpeg',  // image format (may be jpeg or png)
 		jpeg_quality: 90,      // jpeg image quality from 0 (worst) to 100 (best)
+		enable_flash: true,    // enable flash fallback,
 		force_flash: false,    // force flash mode
 		force_file: false,     // force file upload mode
 		flip_horiz: false,     // flip image horiz (mirror mode)
@@ -66,7 +67,9 @@ var Webcam = {
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
 		enable_file_fallback: true,
-		css_prefix: 'webcamjs' // prefix for all css classes
+		css_prefix: 'webcamjs', // prefix for all css classes
+		noInterfaceFoundText: 'No supported webcam interface found.',
+		unfreeze_snap: true    // Whether to unfreeze the camera after snap (defaults to true)
 	},
 
 	errors: {
@@ -193,20 +196,30 @@ var Webcam = {
 				};
 				video.src = URL.createObjectURL( stream ) || stream;
 			}, function(err) {
-				return self.dispatch('error', err);
+				// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
+				// JH 2016-08-07 But only if flash is actually installed -- if not, dispatch error here and now.
+				if (self.params.enable_flash && self.detectFlash()) {
+					setTimeout( function() { self.params.force_flash = 1; self.attach(elem); }, 1 );
+				}
+				else {
+					self.dispatch('error', err);
+				}
 			});
 		}
 		else if (!this.detectFlash() && this.params.enable_file_fallback) {
 			elem.appendChild( this.getUploadFallbackNode() );
 			this.loaded = true;
 		}
-		else {
+		else if (this.params.enable_flash && this.detectFlash()) {
 			// flash fallback
 			window.Webcam = Webcam; // needed for flash-to-js interface
 			var div = document.createElement('div');
 			div.className = this.params.css_prefix + '__flash-container';
 			div.innerHTML = this.getSWFHTML();
 			elem.appendChild( div );
+		}
+		else {
+			this.dispatch('error', new WebcamError( this.params.noInterfaceFoundText ));
 		}
 		
 		// setup final crop for live preview
@@ -229,36 +242,37 @@ var Webcam = {
 	},
 	
 	reset: function() {
-		try {
-			// shutdown camera, reset to potentially attach again
-			if (this.preview_active) this.unfreeze();
-			
-			// attempt to fix issue #64
-			this.unflip();
-			
-			if (this.userMedia) {
-				if (this.stream) {
-					if (this.stream.getVideoTracks) {
-						// get video track to call stop on it
-						var tracks = this.stream.getVideoTracks();
-						if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
-					}
-					else if (this.stream.stop) {
-						// deprecated, may be removed in future
-						this.stream.stop();
-					}
+		// shutdown camera, reset to potentially attach again
+		if (this.preview_active) this.unfreeze();
+		
+		// attempt to fix issue #64
+		this.unflip();
+		
+		if (this.userMedia) {
+			if (this.stream) {
+				if (this.stream.getVideoTracks) {
+					// get video track to call stop on it
+					var tracks = this.stream.getVideoTracks();
+					if (tracks && tracks[0] && tracks[0].stop) tracks[0].stop();
 				}
-				delete this.stream;
-				delete this.video;
+				else if (this.stream.stop) {
+					// deprecated, may be removed in future
+					this.stream.stop();
+				}
 			}
-			
-			if (!this.userMedia && this.detectFlash()) {
-				// call for turn off camera in flash
-				this.getMovie()._releaseCamera();
-			}
+			delete this.stream;
+			delete this.video;
 		}
-		catch (err) {
-			this.dispatch('error', "Could not reset webcam: " + err, err);
+		
+		if (!this.userMedia && this.detectFlash()) {
+			// call for turn off camera in flash
+			this.getMovie()._releaseCamera();
+		}
+
+		if (this.userMedia !== true) {
+			// call for turn off camera in flash
+			var movie = this.getMovie();
+			if (movie && movie._releaseCamera) movie._releaseCamera();
 		}
 
 		if (this.container) {
@@ -573,7 +587,7 @@ var Webcam = {
 		);
 		
 		// remove preview
-		this.unfreeze();
+		if (this.params.unfreeze_snap) this.unfreeze();
 	},
 	
 	snap: function(user_callback, user_canvas) {
