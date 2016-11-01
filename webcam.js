@@ -58,7 +58,8 @@ var Webcam = {
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
 		noInterfaceFoundText: 'No supported webcam interface found.',
-		unfreeze_snap: true    // Whether to unfreeze the camera after snap (defaults to true)
+		unfreeze_snap: true,    // Whether to unfreeze the camera after snap (defaults to true),
+		attachVideoStream: null // A custom function to attach stream to video element. It takes the original video element and stream as arguments and must return a video element.
 	},
 
 	errors: {
@@ -75,11 +76,12 @@ var Webcam = {
 		// Setup getUserMedia, with polyfill for older browsers
 		// Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
 		this.mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? 
-			navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
+			navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.getUserMedia) ? {
 				getUserMedia: function(c) {
 					return new Promise(function(y, n) {
 						(navigator.mozGetUserMedia ||
-						navigator.webkitGetUserMedia).call(navigator, c, y, n);
+						navigator.webkitGetUserMedia ||
+						navigator.getUserMedia).call(navigator, c, y, n);
 					});
 				}
 		} : null);
@@ -190,7 +192,15 @@ var Webcam = {
 					self.dispatch('live');
 					self.flip();
 				};
-				video.src = window.URL.createObjectURL( stream ) || stream;
+
+				self.video = (self.params.attachVideoStream || function(video, stream){
+					video.src = window.URL.createObjectURL( stream ) || stream;
+					return video;
+				})(video, stream);
+
+				if(!self.video){
+					throw 'attachVideoStream function must return an element to play the video !';
+				}
 			})
 			.catch( function(err) {
 				// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
@@ -232,7 +242,7 @@ var Webcam = {
 			elem.style.height = '' + this.params.height + 'px';
 		}
 	},
-	
+
 	reset: function() {
 		// shutdown camera, reset to potentially attach again
 		if (this.preview_active) this.unfreeze();
