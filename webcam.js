@@ -41,7 +41,10 @@ var Webcam = {
 	loaded: false,   // true when webcam movie finishes loading
 	live: false,     // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
-	
+
+	iOS: /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
+	iOS_defImg: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+
 	params: {
 		width: 0,
 		height: 0,
@@ -210,6 +213,37 @@ var Webcam = {
 			div.innerHTML = this.getSWFHTML();
 			elem.appendChild( div );
 		}
+		else if (this.iOS) {
+			var div = document.createElement('div');
+			div.style.width = '' + this.params.dest_width + 'px';
+			div.style.height = '' + this.params.dest_height + 'px';
+			div.style.textAlign = 'center';
+			div.style.display = 'table-cell';
+			div.style.verticalAlign = 'middle';
+			var span = document.createElement('span');
+			span.innerHTML = 'No preview available';
+			div.appendChild(span);
+			var input = document.createElement('input');
+			input.id = this.container.id+'-ios_input';
+			input.setAttribute('type', 'file');
+			input.setAttribute('accept', 'image/*');
+			input.setAttribute('capture', 'camera');
+			var containerId = this.container.id;
+			var iosDefImg = this.iOS_defImg;
+			input.addEventListener('change', function(event) {
+				img = new Image();
+				img.onload = this.ondblclick;
+				img.ondblclick = '';
+				if(event.target.files.length == 1 && event.target.files[0].type.indexOf('image/') == 0) {
+					img.setAttribute('src', URL.createObjectURL(event.target.files[0]));
+				}
+			}, true);
+			div.appendChild(input);
+			elem.appendChild(div);
+			$(input).hide();
+			this.loaded = true;
+			this.live = true;
+		}
 		else {
 			this.dispatch('error', new WebcamError( this.params.noInterfaceFoundText ));
 		}
@@ -256,7 +290,7 @@ var Webcam = {
 			delete this.video;
 		}
 
-		if (this.userMedia !== true) {
+		if (this.userMedia !== true && !this.iOS) {
 			// call for turn off camera in flash
 			var movie = this.getMovie();
 			if (movie && movie._releaseCamera) movie._releaseCamera();
@@ -646,6 +680,11 @@ var Webcam = {
 			
 			// fire callback right away
 			func();
+		}
+		else if (this.iOS) {
+			var input = document.getElementById(this.container.id+'-ios_input');
+			input.ondblclick = func;
+			$(input).show().focus().click().hide();
 		}
 		else {
 			// flash fallback
