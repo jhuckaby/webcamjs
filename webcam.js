@@ -206,13 +206,6 @@ var Webcam = {
 				}
 			});
 		}
-		else if (this.params.enable_flash && this.detectFlash()) {
-			// flash fallback
-			window.Webcam = Webcam; // needed for flash-to-js interface
-			var div = document.createElement('div');
-			div.innerHTML = this.getSWFHTML();
-			elem.appendChild( div );
-		}
 		else if (this.iOS) {
 			var div = document.createElement('div');
 			div.style.width = '' + this.params.dest_width + 'px';
@@ -240,9 +233,16 @@ var Webcam = {
 			}, true);
 			div.appendChild(input);
 			elem.appendChild(div);
-			$(input).hide();
+			input.style.display = 'none';
 			this.loaded = true;
 			this.live = true;
+		}
+		else if (this.params.enable_flash && this.detectFlash()) {
+			// flash fallback
+			window.Webcam = Webcam; // needed for flash-to-js interface
+			var div = document.createElement('div');
+			div.innerHTML = this.getSWFHTML();
+			elem.appendChild( div );
 		}
 		else {
 			this.dispatch('error', new WebcamError( this.params.noInterfaceFoundText ));
@@ -684,7 +684,10 @@ var Webcam = {
 		else if (this.iOS) {
 			var input = document.getElementById(this.container.id+'-ios_input');
 			input.ondblclick = func;
-			$(input).show().focus().click().hide();
+			input.style.display = 'block';
+			input.focus();
+			input.click();
+			input.style.display = 'none';
 		}
 		else {
 			// flash fallback
