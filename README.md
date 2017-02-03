@@ -55,6 +55,7 @@ Here are some live demos showcasing various features of the library:
 | [Flash Demo](https://pixlcore.com/demos/webcamjs/demos/flash.html) | Demonstrates forcing Adobe Flash fallback mode. |
 | [Freeze Demo](https://pixlcore.com/demos/webcamjs/demos/preview.html) | Demonstrates freezing / previewing a snapshot before saving it. |
 | [Mirror Demo](https://pixlcore.com/demos/webcamjs/demos/flip.html) | Demonstrates flipping the image horizontally (mirror mode). |
+| [Continuous Demo](https://pixlcore.com/demos/webcamjs/demos/continuous.html) | Demonstrates continuously capturing images. |
 | **[Full Combo Demo](https://pixlcore.com/demos/webcamjs/demos/combo.html)** | A full combination demo showcasing all features. |
 
 ## Open Source

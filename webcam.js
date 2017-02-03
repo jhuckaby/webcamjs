@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.16',
+	version: '1.0.17',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -256,7 +256,7 @@ var Webcam = {
 			delete this.video;
 		}
 
-		if (this.userMedia !== true) {
+		if ((this.userMedia !== true) && this.loaded) {
 			// call for turn off camera in flash
 			var movie = this.getMovie();
 			if (movie && movie._releaseCamera) movie._releaseCamera();
