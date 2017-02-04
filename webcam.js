@@ -1,9 +1,9 @@
-// WebcamJS v1.0.16
+// WebcamJS v1.0.18
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
 // Based on JPEGCam: http://code.google.com/p/jpegcam/
-// Copyright (c) 2012 - 2016 Joseph Huckaby
+// Copyright (c) 2012 - 2017 Joseph Huckaby
 // Licensed under the MIT License
 
 (function(window) {
@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.16',
+	version: '1.0.18',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -177,10 +177,8 @@ var Webcam = {
 			this.mediaDevices.getUserMedia({
 				"audio": false,
 				"video": this.params.constraints || {
-					mandatory: {
-						minWidth: this.params.dest_width,
-						minHeight: this.params.dest_height
-					}
+					width: this.params.dest_width,
+					height: this.params.dest_height
 				}
 			})
 			.then( function(stream) {
@@ -290,7 +288,7 @@ var Webcam = {
 			delete this.video;
 		}
 
-		if (this.userMedia !== true && !this.iOS) {
+		if ((this.userMedia !== true) && this.loaded && !this.iOS) {
 			// call for turn off camera in flash
 			var movie = this.getMovie();
 			if (movie && movie._releaseCamera) movie._releaseCamera();
