@@ -1,4 +1,4 @@
-// WebcamJS v1.0.18
+// WebcamJS v1.0.19
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.18',
+	version: '1.0.19',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
