@@ -43,7 +43,6 @@ var Webcam = {
 	userMedia: true, // true when getUserMedia is supported natively
 
 	iOS: /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
-	iOS_defImg: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
 
 	params: {
 		width: 0,
@@ -212,26 +211,35 @@ var Webcam = {
 			div.style.display = 'table-cell';
 			div.style.verticalAlign = 'middle';
 			var span = document.createElement('span');
-			span.innerHTML = 'No preview available';
+			span.innerHTML = 'Click here to open camera.';
 			div.appendChild(span);
+			var img = document.createElement('img');
+			img.id = this.container.id+'-ios_img';
+			img.style.width = '' + this.params.dest_width + 'px';
+			img.style.height = '' + this.params.dest_height + 'px';
+			img.style.display = 'none';
+			div.appendChild(img);
 			var input = document.createElement('input');
 			input.id = this.container.id+'-ios_input';
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 			input.setAttribute('capture', 'camera');
-			var containerId = this.container.id;
-			var iosDefImg = this.iOS_defImg;
 			input.addEventListener('change', function(event) {
-				img = new Image();
-				img.onload = this.ondblclick;
-				img.ondblclick = '';
-				if(event.target.files.length == 1 && event.target.files[0].type.indexOf('image/') == 0) {
+				if (event.target.files.length > 0 && event.target.files[0].type.indexOf('image/') == 0) {
 					img.setAttribute('src', URL.createObjectURL(event.target.files[0]));
+					img.style.display = 'block';
 				}
 			}, true);
-			div.appendChild(input);
-			elem.appendChild(div);
 			input.style.display = 'none';
+			div.appendChild(input);
+			var self = this;
+			div.addEventListener('click', function(event) {
+				input.style.display = 'block';
+				input.focus();
+				input.click();
+				input.style.display = 'none';
+			}, true);
+			elem.appendChild(div);
 			this.loaded = true;
 			this.live = true;
 		}
@@ -680,12 +688,26 @@ var Webcam = {
 			func();
 		}
 		else if (this.iOS) {
+			var img = document.getElementById(this.container.id+'-ios_img');
 			var input = document.getElementById(this.container.id+'-ios_input');
-			input.ondblclick = func;
-			input.style.display = 'block';
-			input.focus();
-			input.click();
-			input.style.display = 'none';
+			iFunc = function(event) {
+				func.call(img);
+				img.removeEventListener('load', iFunc);
+				img.style.display = 'none';
+				img.removeAttribute('src');
+				input.value = null;
+			};
+			if (!input.value) {
+				// No image selected yet, activate input field
+				img.addEventListener('load', iFunc);
+				input.style.display = 'block';
+				input.focus();
+				input.click();
+				input.style.display = 'none';
+			} else {
+				// Image already selected
+				iFunc(null);
+			}			
 		}
 		else {
 			// flash fallback
