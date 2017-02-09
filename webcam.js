@@ -194,45 +194,16 @@ var Webcam = {
 			}
 
 	    	switch (orientation) {
-	    		case 2:
-	    			// horizontal flip
-	    			ctx.translate(canvas.width, 0);
-	    			ctx.scale(-1, 1);
-	    			break;
-	    		case 3:
-	    			// 180° rotate left
-	    			ctx.translate(canvas.width, canvas.height);
-	    			ctx.rotate(Math.PI);
-	    			break;
-	    		case 4:
-	    			// vertical flip
-	    			ctx.translate(0, canvas.height);
-	    			ctx.scale(1, -1);
-	    			break
-	    		case 5:
-	    			// vertical flip + 90 rotate right
-	    			ctx.rotate(0.5 * Math.PI);
-	    			ctx.scale(1, -1);
-	    			break;
-	    		case 6:
-	    			// 90° rotate right
-	    			ctx.rotate(0.5 * Math.PI);
-	    			ctx.translate(0, -canvas.height);
-	    			break;
-	    		case 7:
-	    			// horizontal flip + 90 rotate right
-	    			ctx.rotate(0.5 * Math.PI);
-	    			ctx.translate(canvas.width, -canvas.height);
-	    			ctx.scale(-1, 1);
-	    			break;
-	          case 8:
-	        	  // 90° rotate left
-	        	  ctx.rotate(-0.5 * Math.PI);
-	        	  ctx.translate(-canvas.width, 0);
-	        	  break;
+		        case 2: ctx.transform(-1, 0, 0, 1, img.width, 0); break;
+		        case 3: ctx.transform(-1, 0, 0, -1, img.width, img.height); break;
+		        case 4: ctx.transform(1, 0, 0, -1, 0, img.height); break;
+		        case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+		        case 6: ctx.transform(0, 1, -1, 0, img.height , 0); break;
+		        case 7: ctx.transform(0, -1, -1, 0, img.height, img.width); break;
+		        case 8: ctx.transform(0, -1, 1, 0, 0, img.width); break;
 	    	}
 	    	
-			ctx.drawImage(img, 0, 0, img.width, img.height);			
+			ctx.drawImage(img, 0, 0);			
 	    	targetImg.src = canvas.toDataURL();
 		}, false);
 		img.src = origObjURL;
@@ -384,13 +355,11 @@ var Webcam = {
                         var ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
                         var sx = (image.width - params.dest_width / ratio) / 2;
                         var sy = (image.height - params.dest_height / ratio) / 2;
-
                         ctx.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
-
+						
 						var dataURL = canvas.toDataURL();
 						img.src = dataURL;
 						div.style.backgroundImage = "url('"+dataURL+"')";
-						
 					}, false);
 					
 					// read EXIF data
