@@ -105,78 +105,78 @@ var Webcam = {
 	
 	exifOrientation: function(binFile) {
 		// based on Exif.js
-    	var dataView = new DataView(binFile);
-    	if ((dataView.getUint8(0) != 0xFF) || (dataView.getUint8(1) != 0xD8)) {
-    		console.log('Not a valid JPEG file');
-    		return 0;
-    	}
-    	var offset = 2;
-        var marker = null;
-        while (offset < binFile.byteLength) {
-        	if (dataView.getUint8(offset) != 0xFF) {
-        		console.log('Not a valid marker at offset ' + offset + ', found: ' + dataView.getUint8(offset));
-        		return 0;
-        	}
-        	marker = dataView.getUint8(offset + 1);
-        	if (marker == 225) {
-        		offset += 4;
-        		var str = "";
-        		for (n = 0; n < 4; n++) {
-        			str += String.fromCharCode(dataView.getUint8(offset+n));
-        		}
-        		if (str != 'Exif') {
-        			console.log('Not valid EXIF data found');
-	        		return 0;
-        		}
-        		
-        		offset += 6; // tiffOffset
-        		var bigEnd = null;
+		var dataView = new DataView(binFile);
+		if ((dataView.getUint8(0) != 0xFF) || (dataView.getUint8(1) != 0xD8)) {
+			console.log('Not a valid JPEG file');
+			return 0;
+		}
+		var offset = 2;
+		var marker = null;
+		while (offset < binFile.byteLength) {
+			if (dataView.getUint8(offset) != 0xFF) {
+				console.log('Not a valid marker at offset ' + offset + ', found: ' + dataView.getUint8(offset));
+				return 0;
+			}
+			marker = dataView.getUint8(offset + 1);
+			if (marker == 225) {
+				offset += 4;
+				var str = "";
+				for (n = 0; n < 4; n++) {
+					str += String.fromCharCode(dataView.getUint8(offset+n));
+				}
+				if (str != 'Exif') {
+					console.log('Not valid EXIF data found');
+					return 0;
+				}
+				
+				offset += 6; // tiffOffset
+				var bigEnd = null;
 
-        		// test for TIFF validity and endianness
-        		if (dataView.getUint16(offset) == 0x4949) {
-        			bigEnd = false;
-        		} else if (dataView.getUint16(offset) == 0x4D4D) {
-        			bigEnd = true;
-        		} else {
-        			console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)");
-        			return 0;
-        		}
+				// test for TIFF validity and endianness
+				if (dataView.getUint16(offset) == 0x4949) {
+					bigEnd = false;
+				} else if (dataView.getUint16(offset) == 0x4D4D) {
+					bigEnd = true;
+				} else {
+					console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)");
+					return 0;
+				}
 
-        		if (dataView.getUint16(offset+2, !bigEnd) != 0x002A) {
-        			console.log("Not valid TIFF data! (no 0x002A)");
-        			return 0;
-        		}
+				if (dataView.getUint16(offset+2, !bigEnd) != 0x002A) {
+					console.log("Not valid TIFF data! (no 0x002A)");
+					return 0;
+				}
 
-        		var firstIFDOffset = dataView.getUint32(offset+4, !bigEnd);
-        		if (firstIFDOffset < 0x00000008) {
-        			console.log("Not valid TIFF data! (First offset less than 8)", dataView.getUint32(offset+4, !bigEnd));
-        			return 0;
-        		}
-        		
-        		var dataStart = offset + firstIFDOffset;
-        		var entries = dataView.getUint16(dataStart, !bigEnd);
-        		for (var i=0; i<entries; i++) {
-        			var entryOffset = dataStart + i*12 + 2;
-        			if (dataView.getUint16(entryOffset, !bigEnd) == 0x0112) {
-        				var valueType = dataView.getUint16(entryOffset+2, !bigEnd);
-        				var numValues = dataView.getUint32(entryOffset+4, !bigEnd);
-        				if (valueType != 3 && numValues != 1) {
-        					console.log('Invalid EXIF orientation value type ('+valueType+') or count ('+numValues+')');
-        					return 0;
-        				}
-        				var value = dataView.getUint16(entryOffset + 8, !bigEnd);
-        				if (value < 1 || value > 8) {
-        					console.log('Invalid EXIF orientation value ('+value+')');
-        					return 0;
-        				}
-        				return value;
-        			}
-        		}
-        	} else {
-                offset += 2+dataView.getUint16(offset+2);
-            }
-        }
-        return 0;
+				var firstIFDOffset = dataView.getUint32(offset+4, !bigEnd);
+				if (firstIFDOffset < 0x00000008) {
+					console.log("Not valid TIFF data! (First offset less than 8)", dataView.getUint32(offset+4, !bigEnd));
+					return 0;
+				}
+
+				var dataStart = offset + firstIFDOffset;
+				var entries = dataView.getUint16(dataStart, !bigEnd);
+				for (var i=0; i<entries; i++) {
+					var entryOffset = dataStart + i*12 + 2;
+					if (dataView.getUint16(entryOffset, !bigEnd) == 0x0112) {
+						var valueType = dataView.getUint16(entryOffset+2, !bigEnd);
+						var numValues = dataView.getUint32(entryOffset+4, !bigEnd);
+						if (valueType != 3 && numValues != 1) {
+							console.log('Invalid EXIF orientation value type ('+valueType+') or count ('+numValues+')');
+							return 0;
+						}
+						var value = dataView.getUint16(entryOffset + 8, !bigEnd);
+						if (value < 1 || value > 8) {
+							console.log('Invalid EXIF orientation value ('+value+')');
+							return 0;
+						}
+						return value;
+					}
+				}
+			} else {
+				offset += 2+dataView.getUint16(offset+2);
+			}
+		}
+		return 0;
 	},
 	
 	fixOrientation: function(origObjURL, orientation, targetImg) {
@@ -193,18 +193,18 @@ var Webcam = {
 				canvas.height = img.width;
 			}
 
-	    	switch (orientation) {
-		        case 2: ctx.transform(-1, 0, 0, 1, img.width, 0); break;
-		        case 3: ctx.transform(-1, 0, 0, -1, img.width, img.height); break;
-		        case 4: ctx.transform(1, 0, 0, -1, 0, img.height); break;
-		        case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-		        case 6: ctx.transform(0, 1, -1, 0, img.height , 0); break;
-		        case 7: ctx.transform(0, -1, -1, 0, img.height, img.width); break;
-		        case 8: ctx.transform(0, -1, 1, 0, 0, img.width); break;
-	    	}
-	    	
+			switch (orientation) {
+				case 2: ctx.transform(-1, 0, 0, 1, img.width, 0); break;
+				case 3: ctx.transform(-1, 0, 0, -1, img.width, img.height); break;
+				case 4: ctx.transform(1, 0, 0, -1, 0, img.height); break;
+				case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+				case 6: ctx.transform(0, 1, -1, 0, img.height , 0); break;
+				case 7: ctx.transform(0, -1, -1, 0, img.height, img.width); break;
+				case 8: ctx.transform(0, -1, 1, 0, 0, img.width); break;
+			}
+
 			ctx.drawImage(img, 0, 0);			
-	    	targetImg.src = canvas.toDataURL();
+			targetImg.src = canvas.toDataURL();
 		}, false);
 		img.src = origObjURL;
 	},
@@ -352,11 +352,11 @@ var Webcam = {
 						canvas.height = params.dest_height;
 						var ctx = canvas.getContext('2d');
 
-                        var ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
-                        var sx = (image.width - params.dest_width / ratio) / 2;
-                        var sy = (image.height - params.dest_height / ratio) / 2;
-                        ctx.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
-						
+						var ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
+						var sx = (image.width - params.dest_width / ratio) / 2;
+						var sy = (image.height - params.dest_height / ratio) / 2;
+						ctx.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
+
 						var dataURL = canvas.toDataURL();
 						img.src = dataURL;
 						div.style.backgroundImage = "url('"+dataURL+"')";
@@ -364,26 +364,26 @@ var Webcam = {
 					
 					// read EXIF data
 					var fileReader = new FileReader();
-			        fileReader.addEventListener('load', function(e) {
-			        	var orientation = self.exifOrientation(e.target.result);
-			            if (orientation > 1) {
-			            	self.fixOrientation(objURL, orientation, image);
-			            } else {
-			            	image.src = objURL;
-			            }
+					fileReader.addEventListener('load', function(e) {
+						var orientation = self.exifOrientation(e.target.result);
+						if (orientation > 1) {
+							self.fixOrientation(objURL, orientation, image);
+						} else {
+							image.src = objURL;
+						}
 					}, false);
 					
-			        // Convert data to blob
+					// Convert data to blob
 					var http = new XMLHttpRequest();
-			        http.open("GET", objURL, true);
-			        http.responseType = "blob";
-			        http.onload = function(e) {
-			            if (this.status == 200 || this.status === 0) {
-			            	fileReader.readAsArrayBuffer(this.response);
-			            }
-			        };
-			        http.send();
-					
+					http.open("GET", objURL, true);
+					http.responseType = "blob";
+					http.onload = function(e) {
+						if (this.status == 200 || this.status === 0) {
+							fileReader.readAsArrayBuffer(this.response);
+						}
+					};
+					http.send();
+
 				}
 			}, true);
 			input.style.display = 'none';
