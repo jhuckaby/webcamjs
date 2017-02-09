@@ -103,6 +103,141 @@ var Webcam = {
 		}
 	},
 	
+	exifOrientation: function(binFile) {
+		// based on Exif.js
+    	var dataView = new DataView(binFile);
+    	if ((dataView.getUint8(0) != 0xFF) || (dataView.getUint8(1) != 0xD8)) {
+    		console.log('Not a valid JPEG file');
+    		return 0;
+    	}
+    	var offset = 2;
+        var marker = null;
+        while (offset < binFile.byteLength) {
+        	if (dataView.getUint8(offset) != 0xFF) {
+        		console.log('Not a valid marker at offset ' + offset + ', found: ' + dataView.getUint8(offset));
+        		return 0;
+        	}
+        	marker = dataView.getUint8(offset + 1);
+        	if (marker == 225) {
+        		offset += 4;
+        		var str = "";
+        		for (n = 0; n < 4; n++) {
+        			str += String.fromCharCode(dataView.getUint8(offset+n));
+        		}
+        		if (str != 'Exif') {
+        			console.log('Not valid EXIF data found');
+	        		return 0;
+        		}
+        		
+        		offset += 6; // tiffOffset
+        		var bigEnd = null;
+
+        		// test for TIFF validity and endianness
+        		if (dataView.getUint16(offset) == 0x4949) {
+        			bigEnd = false;
+        		} else if (dataView.getUint16(offset) == 0x4D4D) {
+        			bigEnd = true;
+        		} else {
+        			console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)");
+        			return 0;
+        		}
+
+        		if (dataView.getUint16(offset+2, !bigEnd) != 0x002A) {
+        			console.log("Not valid TIFF data! (no 0x002A)");
+        			return 0;
+        		}
+
+        		var firstIFDOffset = dataView.getUint32(offset+4, !bigEnd);
+        		if (firstIFDOffset < 0x00000008) {
+        			console.log("Not valid TIFF data! (First offset less than 8)", dataView.getUint32(offset+4, !bigEnd));
+        			return 0;
+        		}
+        		
+        		var dataStart = offset + firstIFDOffset;
+        		var entries = dataView.getUint16(dataStart, !bigEnd);
+        		for (var i=0; i<entries; i++) {
+        			var entryOffset = dataStart + i*12 + 2;
+        			if (dataView.getUint16(entryOffset, !bigEnd) == 0x0112) {
+        				var valueType = dataView.getUint16(entryOffset+2, !bigEnd);
+        				var numValues = dataView.getUint32(entryOffset+4, !bigEnd);
+        				if (valueType != 3 && numValues != 1) {
+        					console.log('Invalid EXIF orientation value type ('+valueType+') or count ('+numValues+')');
+        					return 0;
+        				}
+        				var value = dataView.getUint16(entryOffset + 8, !bigEnd);
+        				if (value < 1 || value > 8) {
+        					console.log('Invalid EXIF orientation value ('+value+')');
+        					return 0;
+        				}
+        				return value;
+        			}
+        		}
+        	} else {
+                offset += 2+dataView.getUint16(offset+2);
+            }
+        }
+        return 0;
+	},
+	
+	fixOrientation: function(origObjURL, orientation, targetImg) {
+		var img = new Image();
+		img.addEventListener('load', function(event) {
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			
+			if (orientation < 5) {
+				canvas.width = img.width;
+				canvas.height = img.height;
+			} else {
+				canvas.width = img.height;
+				canvas.height = img.width;
+			}
+
+	    	switch (orientation) {
+	    		case 2:
+	    			// horizontal flip
+	    			ctx.translate(canvas.width, 0);
+	    			ctx.scale(-1, 1);
+	    			break;
+	    		case 3:
+	    			// 180° rotate left
+	    			ctx.translate(canvas.width, canvas.height);
+	    			ctx.rotate(Math.PI);
+	    			break;
+	    		case 4:
+	    			// vertical flip
+	    			ctx.translate(0, canvas.height);
+	    			ctx.scale(1, -1);
+	    			break
+	    		case 5:
+	    			// vertical flip + 90 rotate right
+	    			ctx.rotate(0.5 * Math.PI);
+	    			ctx.scale(1, -1);
+	    			break;
+	    		case 6:
+	    			// 90° rotate right
+	    			ctx.rotate(0.5 * Math.PI);
+	    			ctx.translate(0, -canvas.height);
+	    			break;
+	    		case 7:
+	    			// horizontal flip + 90 rotate right
+	    			ctx.rotate(0.5 * Math.PI);
+	    			ctx.translate(canvas.width, -canvas.height);
+	    			ctx.scale(-1, 1);
+	    			break;
+	          case 8:
+	        	  // 90° rotate left
+	        	  ctx.rotate(-0.5 * Math.PI);
+	        	  ctx.translate(-canvas.width, 0);
+	        	  break;
+	    	}
+	    	
+			ctx.drawImage(img, 0, 0, img.width, img.height);			
+	    	targetImg.src = canvas.toDataURL();
+		}, false);
+		img.src = origObjURL;
+	},
+	
 	attach: function(elem) {
 		// create webcam preview and attach to DOM element
 		// pass in actual DOM reference, ID, or CSS selector
@@ -206,7 +341,8 @@ var Webcam = {
 		}
 		else if (this.iOS) {
 			var div = document.createElement('div');
-			//div.className = 'webcamjs-ios-placeholder';
+			div.id = this.container.id+'-ios_div';
+			div.className = 'webcamjs-ios-placeholder';
 			div.style.width = '' + this.params.width + 'px';
 			div.style.height = '' + this.params.height + 'px';
 			div.style.textAlign = 'center';
@@ -231,28 +367,54 @@ var Webcam = {
 			input.setAttribute('accept', 'image/*');
 			input.setAttribute('capture', 'camera');
 			
+			var self = this;
 			var params = this.params;
 			input.addEventListener('change', function(event) {
 				if (event.target.files.length > 0 && event.target.files[0].type.indexOf('image/') == 0) {
-					image = new Image();
+					var objURL = URL.createObjectURL(event.target.files[0]);
+
+					// load image with auto scale and crop
+					var image = new Image();
 					image.addEventListener('load', function(event) {
-						canvas = document.createElement('canvas');
+						var canvas = document.createElement('canvas');
 						canvas.width = params.dest_width;
 						canvas.height = params.dest_height;
-						context = canvas.getContext('2d');
+						var ctx = canvas.getContext('2d');
 
-                        ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
-                        sx = (image.width - params.dest_width / ratio) / 2;
-                        sy = (image.height - params.dest_height / ratio) / 2;
+                        var ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
+                        var sx = (image.width - params.dest_width / ratio) / 2;
+                        var sy = (image.height - params.dest_height / ratio) / 2;
 
-						context.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
+                        ctx.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
 
-						dataURL = canvas.toDataURL();
-						img.setAttribute('src', dataURL);
+						var dataURL = canvas.toDataURL();
+						img.src = dataURL;
 						div.style.backgroundImage = "url('"+dataURL+"')";
 						
 					}, false);
-					image.src = URL.createObjectURL(event.target.files[0]);
+					
+					// read EXIF data
+					var fileReader = new FileReader();
+			        fileReader.addEventListener('load', function(e) {
+			        	var orientation = self.exifOrientation(e.target.result);
+			            if (orientation > 1) {
+			            	self.fixOrientation(objURL, orientation, image);
+			            } else {
+			            	image.src = objURL;
+			            }
+					}, false);
+					
+			        // Convert data to blob
+					var http = new XMLHttpRequest();
+			        http.open("GET", objURL, true);
+			        http.responseType = "blob";
+			        http.onload = function(e) {
+			            if (this.status == 200 || this.status === 0) {
+			            	fileReader.readAsArrayBuffer(this.response);
+			            }
+			        };
+			        http.send();
+					
 				}
 			}, true);
 			input.style.display = 'none';
@@ -713,12 +875,13 @@ var Webcam = {
 			func();
 		}
 		else if (this.iOS) {
+			var div = document.getElementById(this.container.id+'-ios_div');
 			var img = document.getElementById(this.container.id+'-ios_img');
 			var input = document.getElementById(this.container.id+'-ios_input');
 			iFunc = function(event) {
 				func.call(img);
 				img.removeEventListener('load', iFunc);
-				//img.style.display = 'none';
+				div.style.backgroundImage = 'none';
 				img.removeAttribute('src');
 				input.value = null;
 			};
