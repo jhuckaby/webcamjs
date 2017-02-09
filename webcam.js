@@ -60,7 +60,8 @@ var Webcam = {
 		swfURL: '',            // URI to webcam.swf movie (defaults to the js location)
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
 		noInterfaceFoundText: 'No supported webcam interface found.',
-		unfreeze_snap: true    // Whether to unfreeze the camera after snap (defaults to true)
+		unfreeze_snap: true,    // Whether to unfreeze the camera after snap (defaults to true)
+		iosPlaceholderText: 'Click here to open camera.'
 	},
 
 	errors: {
@@ -205,13 +206,18 @@ var Webcam = {
 		}
 		else if (this.iOS) {
 			var div = document.createElement('div');
-			div.style.width = '' + this.params.dest_width + 'px';
-			div.style.height = '' + this.params.dest_height + 'px';
+			//div.className = 'webcamjs-ios-placeholder';
+			div.style.width = '' + this.params.width + 'px';
+			div.style.height = '' + this.params.height + 'px';
 			div.style.textAlign = 'center';
 			div.style.display = 'table-cell';
 			div.style.verticalAlign = 'middle';
+			div.style.backgroundRepeat = 'no-repeat';
+			div.style.backgroundSize = 'contain';
+			div.style.backgroundPosition = 'center';
 			var span = document.createElement('span');
-			span.innerHTML = 'Click here to open camera.';
+			span.className = 'webcamjs-ios-text';
+			span.innerHTML = this.params.iosPlaceholderText;
 			div.appendChild(span);
 			var img = document.createElement('img');
 			img.id = this.container.id+'-ios_img';
@@ -224,10 +230,29 @@ var Webcam = {
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 			input.setAttribute('capture', 'camera');
+			
+			var params = this.params;
 			input.addEventListener('change', function(event) {
 				if (event.target.files.length > 0 && event.target.files[0].type.indexOf('image/') == 0) {
-					img.setAttribute('src', URL.createObjectURL(event.target.files[0]));
-					img.style.display = 'block';
+					image = new Image();
+					image.addEventListener('load', function(event) {
+						canvas = document.createElement('canvas');
+						canvas.width = params.dest_width;
+						canvas.height = params.dest_height;
+						context = canvas.getContext('2d');
+
+                        ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
+                        sx = (image.width - params.dest_width / ratio) / 2;
+                        sy = (image.height - params.dest_height / ratio) / 2;
+
+						context.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
+
+						dataURL = canvas.toDataURL();
+						img.setAttribute('src', dataURL);
+						div.style.backgroundImage = "url('"+dataURL+"')";
+						
+					}, false);
+					image.src = URL.createObjectURL(event.target.files[0]);
 				}
 			}, true);
 			input.style.display = 'none';
@@ -238,7 +263,7 @@ var Webcam = {
 				input.focus();
 				input.click();
 				input.style.display = 'none';
-			}, true);
+			}, false);
 			elem.appendChild(div);
 			this.loaded = true;
 			this.live = true;
@@ -693,7 +718,7 @@ var Webcam = {
 			iFunc = function(event) {
 				func.call(img);
 				img.removeEventListener('load', iFunc);
-				img.style.display = 'none';
+				//img.style.display = 'none';
 				img.removeAttribute('src');
 				input.value = null;
 			};
