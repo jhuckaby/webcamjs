@@ -61,7 +61,9 @@ var Webcam = {
 		flashNotDetectedText: 'ERROR: No Adobe Flash Player detected.  Webcam.js relies on Flash for browsers that do not support getUserMedia (like yours).',
 		noInterfaceFoundText: 'No supported webcam interface found.',
 		unfreeze_snap: true,    // Whether to unfreeze the camera after snap (defaults to true)
-		iosPlaceholderText: 'Click here to open camera.'
+		iosPlaceholderText: 'Click here to open camera.',
+		user_callback: null,    // callback function for snapshot (used if no user_callback parameter given to snap function)
+		user_canvas: null       // user provided canvas for snapshot (used if no user_canvas parameter given to snap function)
 	},
 
 	errors: {
@@ -104,7 +106,8 @@ var Webcam = {
 	},
 	
 	exifOrientation: function(binFile) {
-		// based on Exif.js
+		// extract orientation information from the image provided by iOS
+		// algorithm based on exif-js
 		var dataView = new DataView(binFile);
 		if ((dataView.getUint8(0) != 0xFF) || (dataView.getUint8(1) != 0xD8)) {
 			console.log('Not a valid JPEG file');
@@ -113,6 +116,7 @@ var Webcam = {
 		var offset = 2;
 		var marker = null;
 		while (offset < binFile.byteLength) {
+			// find 0xFFE1 (225 marker)
 			if (dataView.getUint8(offset) != 0xFF) {
 				console.log('Not a valid marker at offset ' + offset + ', found: ' + dataView.getUint8(offset));
 				return 0;
@@ -153,6 +157,7 @@ var Webcam = {
 					return 0;
 				}
 
+				// extract orientation data
 				var dataStart = offset + firstIFDOffset;
 				var entries = dataView.getUint16(dataStart, !bigEnd);
 				for (var i=0; i<entries; i++) {
@@ -180,11 +185,16 @@ var Webcam = {
 	},
 	
 	fixOrientation: function(origObjURL, orientation, targetImg) {
+		// fix image orientation based on exif orientation data
+		// exif orientation information
+		//    http://www.impulseadventure.com/photo/exif-orientation.html
+		//    link source wikipedia (https://en.wikipedia.org/wiki/Exif#cite_note-20)
 		var img = new Image();
 		img.addEventListener('load', function(event) {
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
 			
+			// switch width height if orientation needed
 			if (orientation < 5) {
 				canvas.width = img.width;
 				canvas.height = img.height;
@@ -193,6 +203,7 @@ var Webcam = {
 				canvas.height = img.width;
 			}
 
+			// transform (rotate) image - see link at beginning this method
 			switch (orientation) {
 				case 2: ctx.transform(-1, 0, 0, 1, img.width, 0); break;
 				case 3: ctx.transform(-1, 0, 0, -1, img.width, img.height); break;
@@ -203,9 +214,11 @@ var Webcam = {
 				case 8: ctx.transform(0, -1, 1, 0, 0, img.width); break;
 			}
 
-			ctx.drawImage(img, 0, 0);			
+			ctx.drawImage(img, 0, 0);
+			// pass rotated image data to the target image container
 			targetImg.src = canvas.toDataURL();
 		}, false);
+		// start transformation by load event
 		img.src = origObjURL;
 	},
 	
@@ -311,6 +324,7 @@ var Webcam = {
 			});
 		}
 		else if (this.iOS) {
+			// prepare HTML elements
 			var div = document.createElement('div');
 			div.id = this.container.id+'-ios_div';
 			div.className = 'webcamjs-ios-placeholder';
@@ -340,6 +354,7 @@ var Webcam = {
 			
 			var self = this;
 			var params = this.params;
+			// add input listener to load the selected image
 			input.addEventListener('change', function(event) {
 				if (event.target.files.length > 0 && event.target.files[0].type.indexOf('image/') == 0) {
 					var objURL = URL.createObjectURL(event.target.files[0]);
@@ -352,10 +367,13 @@ var Webcam = {
 						canvas.height = params.dest_height;
 						var ctx = canvas.getContext('2d');
 
-						var ratio = Math.max(params.dest_width / image.width, params.dest_height / image.height);
-						var sx = (image.width - params.dest_width / ratio) / 2;
-						var sy = (image.height - params.dest_height / ratio) / 2;
-						ctx.drawImage(image, sx, sy, image.width-sx, image.height-sy, 0, 0, params.dest_width, params.dest_height);
+						// crop and scale image for final size
+						ratio = Math.min(image.width / params.dest_width, image.height / params.dest_height);
+						var sw = params.dest_width * ratio;
+						var sh = params.dest_height * ratio;
+						var sx = (image.width - sw) / 2;
+						var sy = (image.height - sh) / 2;
+						ctx.drawImage(image, sx, sy, sw, sh, 0, 0, params.dest_width, params.dest_height);
 
 						var dataURL = canvas.toDataURL();
 						img.src = dataURL;
@@ -367,13 +385,16 @@ var Webcam = {
 					fileReader.addEventListener('load', function(e) {
 						var orientation = self.exifOrientation(e.target.result);
 						if (orientation > 1) {
+							// image need to rotate (see comments on fixOrientation method for more information)
+							// transform image and load to image object
 							self.fixOrientation(objURL, orientation, image);
 						} else {
+							// load image data to image object
 							image.src = objURL;
 						}
 					}, false);
 					
-					// Convert data to blob
+					// Convert image data to blob format
 					var http = new XMLHttpRequest();
 					http.open("GET", objURL, true);
 					http.responseType = "blob";
@@ -385,15 +406,21 @@ var Webcam = {
 					http.send();
 
 				}
-			}, true);
+			}, false);
 			input.style.display = 'none';
-			div.appendChild(input);
-			var self = this;
+			elem.appendChild(input);
+			// make div clickable for open camera interface
 			div.addEventListener('click', function(event) {
-				input.style.display = 'block';
-				input.focus();
-				input.click();
-				input.style.display = 'none';
+				if (params.user_callback) {
+					// global user_callback defined - create the snapshot
+					self.snap(params.user_callback, params.user_canvas);
+				} else {
+					// no global callback definied for snapshot, load image and wait for external snap method call
+					input.style.display = 'block';
+					input.focus();
+					input.click();
+					input.style.display = 'none';
+				}
 			}, false);
 			elem.appendChild(div);
 			this.loaded = true;
@@ -765,6 +792,10 @@ var Webcam = {
 	},
 	
 	snap: function(user_callback, user_canvas) {
+		// use global callback and canvas if not defined as parameter
+		if (!user_callback) user_callback = this.params.user_callback;
+		if (!user_canvas) user_canvas = this.params.user_canvas;
+		
 		// take snapshot and return image data uri
 		var self = this;
 		var params = this.params;
@@ -847,6 +878,7 @@ var Webcam = {
 			var div = document.getElementById(this.container.id+'-ios_div');
 			var img = document.getElementById(this.container.id+'-ios_img');
 			var input = document.getElementById(this.container.id+'-ios_input');
+			// function for handle snapshot event (call user_callback and reset the interface)
 			iFunc = function(event) {
 				func.call(img);
 				img.removeEventListener('load', iFunc);
