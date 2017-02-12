@@ -48,6 +48,7 @@ Here are some live demos showcasing various features of the library:
 |------|-------|
 | [Basic Demo](https://pixlcore.com/demos/webcamjs/demos/basic.html) | Demonstrates a basic 320x240 image capture. |
 | [Large Demo](https://pixlcore.com/demos/webcamjs/demos/large.html) | Demonstrates capturing a large 640x480 image, but showing a live preview at 320x240. |
+| [Large iOS Demo](https://pixlcore.com/demos/webcamjs/demos/ios-large.html) | Demonstrates capturing a large 640x480 image on iOS platform. |
 | [Crop Demo](https://pixlcore.com/demos/webcamjs/demos/crop.html) | Demonstrates cropping a 240x240 square out of the center of a 320x240 webcam image. |
 | [Large Crop Demo](https://pixlcore.com/demos/webcamjs/demos/crop-large.html) | Demonstrates a large 480x480 square crop, from a 640x480 image capture, with a 240x240 live preview. |
 | [HD Demo](https://pixlcore.com/demos/webcamjs/demos/hd.html) | Demonstrates a 720p HD (1280x720) image capture (only supported by some webcams). |
