@@ -993,6 +993,7 @@ var Webcam = {
 		// contruct use AJAX object
 		var http = new XMLHttpRequest();
 		http.open("POST", target_url, true);
+		http.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		
 		// setup progress events
 		if (http.upload && http.upload.addEventListener) {
