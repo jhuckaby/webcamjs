@@ -27,7 +27,7 @@ function WebcamError() {
 	this.message = temp.message;
 }
 
-IntermediateInheritor = function() {};
+var IntermediateInheritor = function() {};
 IntermediateInheritor.prototype = Error.prototype;
 
 FlashError.prototype = new IntermediateInheritor();
@@ -557,6 +557,7 @@ var Webcam = {
 			return true;
 		}
 		else if (name == 'error') {
+			var message;
 			if ((args[0] instanceof FlashError) || (args[0] instanceof WebcamError)) {
 				message = args[0].message;
 			} else {
