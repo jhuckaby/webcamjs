@@ -92,7 +92,7 @@ var Webcam = {
 		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 		this.userMedia = this.userMedia && !!this.mediaDevices && !!window.URL;
 		
-		if (iOS) {
+		if (this.iOS) {
 			this.userMedia = null;
 		}
 		
