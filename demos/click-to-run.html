@@ -21,8 +21,8 @@
 	<div id="my_camera"></div>
 	
 	<!-- First, include the Webcam.js JavaScript Library -->
-	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-	<script type="text/javascript" src="../webcam.js"></script>
+	<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="../webcam.min.js"></script>
 	
 	<!-- Configure a few settings and attach camera -->
 	<script language="JavaScript">
@@ -43,6 +43,7 @@
 	<!-- Code to handle taking the snapshot and displaying it locally -->
 	<script language="JavaScript">
 		function setup() {
+			Webcam.reset();
 			Webcam.attach( '#my_camera' );
 		}
 		

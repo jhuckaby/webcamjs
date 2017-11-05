@@ -9,6 +9,7 @@
 		h2, h3 { margin-top:0; }
 		form { margin-top: 15px; }
 		form > input { margin-right: 15px; }
+		#my_camera { background: #ccc; }
 		#results { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
 	</style>
 </head>
@@ -21,24 +22,20 @@
 	<div id="my_camera"></div>
 	
 	<!-- First, include the Webcam.js JavaScript Library -->
-	<script type="text/javascript" src="../webcam.js"></script>
+	<script type="text/javascript" src="../webcam.min.js"></script>
 	
 	<!-- Configure a few settings and attach camera -->
 	<script language="JavaScript">
 		Webcam.set({
 			width: 320,
-			height: 240,
+			height: 180,
 			image_format: 'jpeg',
 			jpeg_quality: 90,
 			constraints: {
-				mandatory: {
-					minWidth: 320,
-					minHeight: 240
-					// minFrameRate: 30
-				},
-				optional: [
-					{ minFrameRate: 60 }
-				]
+				width: 320, // { exact: 320 },
+				height: 180, // { exact: 180 },
+				facingMode: 'user',
+				frameRate: 30
 			}
 		});
 		Webcam.attach( '#my_camera' );

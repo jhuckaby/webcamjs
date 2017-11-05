@@ -1,0 +1,88 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>WebcamJS Test Page</title>
+	<style type="text/css">
+		body { font-family: Helvetica, sans-serif; }
+		h2, h3 { margin-top:0; }
+		form { margin-top: 15px; }
+		form > input { margin-right: 15px; }
+		#results { float:right; padding:15px; border:1px solid; background:#f8f8f8; }
+		#results > img { width: 160px; height: 120px; }
+		
+		.left { float: left; }
+		.right { float: right; }
+		.half { width: 50%; }
+	</style>
+</head>
+<body>	
+	<div class="left">
+		<h1>WebcamJS Test Page</h1>
+		<h3>Demonstrates continuous capture &amp; display</h3>
+		
+		<div id="my_camera"></div>
+		
+		<!-- A button for taking snaps -->
+		<form>
+			<input type="button" value="Start" onClick="start_snapping()">
+			<input type="button" value="Stop" onClick="stop_snapping()">
+			<input type="button" value="Clear" onClick="erase_snaps()">
+		</form>
+	</div>
+	
+	<div class="right half">
+		<div id="results"><p>Your captured images will appear here...</p></div>
+	</div>
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="../webcam.min.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			width: 320,
+			height: 240,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+	</script>
+	
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+		var timer = null;
+		
+		function take_snapshot() {
+			// take snapshot and get image data
+			Webcam.snap( function(data_uri) {
+				// display results in page
+				var img = new Image();
+				img.src = data_uri;
+				
+				document.getElementById('results').appendChild( img );
+			} );
+		}
+		
+		function start_snapping() {
+			if (!timer) {
+				take_snapshot();
+				timer = setInterval( take_snapshot, 250 );
+			}
+		}
+		
+		function stop_snapping() {
+			if (timer) {
+				clearTimeout( timer );
+				timer = null;
+			}
+		}
+		
+		function erase_snaps() {
+			document.getElementById('results').innerHTML = '';
+		}
+	</script>
+	
+</body>
+</html>

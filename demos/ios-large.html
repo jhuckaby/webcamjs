@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>WebcamJS Test Page</title>
+	<title>WebcamJS Test Page - Large Capture</title>
 	<style type="text/css">
 		body { font-family: Helvetica, sans-serif; }
 		h2, h3 { margin-top:0; }
@@ -15,8 +15,8 @@
 <body>
 	<div id="results">Your captured image will appear here...</div>
 	
-	<h1>WebcamJS Test Page</h1>
-	<h3>Demonstrates 240x240 cropped capture &amp; display</h3>
+	<h1>WebcamJS Test Page - Large Capture</h1>
+	<h3>Demonstrates 640x480 large capture with 320x240 small display</h3>
 	
 	<div id="my_camera"></div>
 	
@@ -26,43 +26,20 @@
 	<!-- Configure a few settings and attach camera -->
 	<script language="JavaScript">
 		Webcam.set({
-			// live preview size
 			width: 320,
 			height: 240,
-			
-			// device capture size
-			dest_width: 320,
-			dest_height: 240,
-			
-			// final cropped size
-			crop_width: 240,
-			crop_height: 240,
-			
-			// format and quality
+			dest_width: 640,
+			dest_height: 480,
 			image_format: 'jpeg',
-			jpeg_quality: 90
-		});
-		
-		Webcam.attach( '#my_camera' );
-	</script>
-	
-	<!-- A button for taking snaps -->
-	<form>
-		<input type=button value="Take Snapshot" onClick="take_snapshot()">
-	</form>
-	
-	<!-- Code to handle taking the snapshot and displaying it locally -->
-	<script language="JavaScript">
-		function take_snapshot() {
-			// take snapshot and get image data
-			Webcam.snap( function(data_uri) {
+			jpeg_quality: 90,
+			user_callback: function(data_uri) {
 				// display results in page
 				document.getElementById('results').innerHTML = 
-					'<h2>Here is your image:</h2>' + 
+					'<h2>Here is your large image:</h2>' + 
 					'<img src="'+data_uri+'"/>';
-			} );
-		}
+			}
+		});
+		Webcam.attach( '#my_camera' );
 	</script>
-	
 </body>
 </html>
