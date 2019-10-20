@@ -92,10 +92,6 @@ var Webcam = {
 		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 		this.userMedia = this.userMedia && !!this.mediaDevices && !!window.URL;
 		
-		if (this.iOS) {
-			this.userMedia = null;
-		}
-		
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
@@ -274,6 +270,7 @@ var Webcam = {
 			// setup webcam video container
 			var video = document.createElement('video');
 			video.setAttribute('autoplay', 'autoplay');
+			video.setAttribute('playsinline', 'playsinline');
 			video.style.width = '' + this.params.dest_width + 'px';
 			video.style.height = '' + this.params.dest_height + 'px';
 			
