@@ -1,0 +1,495 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+        <meta property="og:title" content="HTML5 Video"/>
+        <meta property="og:description" content="The Future is now! Awesome HTML5 Video."/>
+        <meta property="og:image" content="http://www.barbafan.de/wp-content/ipad-ausmalbilder/video.png" />
+        <!--[if IE]><script src="http://www.barbafan.de/wp-content/ipad-ausmalbilder/excanvas.js"></script><![endif]-->
+        <title>Video</title>
+        <!-- First, include the Webcam.js JavaScript Library -->
+        <script type="text/javascript" src="../webcam.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script> 
+        <script>
+            (function($){
+                jQuery.fn.webkitTransform = function(cssstring) {
+                    return this.each(function() {
+                        var element = $(this);
+                        var wtstring;
+                        if($(element).attr('remember_webkit_transform')) {
+                            wtstring=$(element).attr('remember_webkit_transform');
+                        }
+                        else
+                        {
+                            ;
+                        }
+                        if(!wtstring) {
+                            wtstring=cssstring;
+                        } else {
+                            csA= new Array();
+                            csA=cssstring.split(' ');
+                            csAA=new Array();
+                            for (var i=0; i<csA.length; i++) {
+                                tempA=csA[i].split('(');
+                                if(tempA.length==2) {
+                                    tempA[0]=jQuery.trim(tempA[0]);
+                                    tempA[1]=jQuery.trim(tempA[1]);
+                                    tempA[1]=tempA[1].substring(0,(tempA[1].length-1));
+                                }
+                                csAA[tempA[0]]=tempA[1];
+                            }
+                            wtA= new Array();
+                            wtA=wtstring.split(' ');
+                            wtAA=new Array();
+                            for (var i=0; i<wtA.length; i++) {
+                                tempA=wtA[i].split('(');
+                                if(tempA.length==2) {
+                                    tempA[0]=jQuery.trim(tempA[0]);
+                                    tempA[1]=jQuery.trim(tempA[1]);
+                                    tempA[1]=tempA[1].substring(0,(tempA[1].length-1));
+                                }
+                                wtAA[tempA[0]]=tempA[1];
+                            }
+                            for (j in csAA) {
+                                wtAA[j]=csAA[j];
+                            }
+                            var tempwtstring='';
+                            for(z in wtAA) {
+                                if(wtAA[z]) {
+                                    tempwtstring=tempwtstring+z+'('+wtAA[z]+') ';
+                                }
+                            }
+                            wtstring=tempwtstring;
+                        }
+                        $(element).css('-webkit-transform', wtstring);
+                        $(element).css('-moz-transform', wtstring);
+                        $(element).css('-o-transform', wtstring);
+                        $(element).attr('remember_webkit_transform', wtstring)
+                        return element;
+                    });
+                };
+            })(jQuery);
+            function videoChange(cssname, cssvalue) {
+                if(cssname=='-webkit-transform') {
+                    //alert(cssvalue);
+                    $('#output').webkitTransform(cssvalue);
+                } else {
+                    $('#output').css(cssname,cssvalue);
+                }
+                //alert(cssvalue);
+                return true;
+            }
+            var toBlackWhitePA = function(inputPA, outputPA, w, h) {
+                //var A = $.inim.canvasIoFactory(canvas);
+                //var ctx = A[0];
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                //var w = input.width;
+                //var h = input.height;
+                for (var y = 0; y < h; y += 1) {
+                    for (var x = 0; x < w; x += 1) {
+                        var pixel = (y*w + x)*4;
+                        var factor = ((inputData[pixel] *.3 + inputData[pixel+1]*.59 + inputData[pixel+2]*.11) );
+                        outputData[pixel] = factor * 1;
+                        outputData[pixel+1] = factor * 1;
+                        outputData[pixel+2] = factor * 1;
+                        outputData[pixel+ 3] = inputData[pixel+ 3];
+                    }
+                }
+                return outputPA;
+            }
+            var toSepiaPA = function(inputPA, outputPA, w, h) {
+                //var A = $.inim.canvasIoFactory(canvas);
+                //var ctx = A[0];
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                //var w = input.width;
+                //var h = input.height;
+                var sr; var sg; var sb;
+                var rr; var rg; var rb;
+                for (var y = 0; y < h; y += 1) {
+                    for (var x = 0; x < w; x += 1) {
+                        var pixel = (y*w + x)*4;
+                        sr = inputData[pixel];
+                        sg = inputData[pixel+1];
+                        sb = inputData[pixel+2];
+                        rr = (sr * 0.393 + sg * 0.769 + sb * 0.189);
+                        rg = (sr * 0.349 + sg * 0.686 + sb * 0.168);
+                        rb = (sr * 0.272 + sg * 0.534 + sb * 0.131);
+                        if (rr < 0) rr = 0; if (rr > 255) rr = 255;
+                        if (rg < 0) rg = 0; if (rg > 255) rg = 255;
+                        if (rb < 0) rb = 0; if (rb > 255) rb = 255;
+                        outputData[pixel] = Math.round(rr*cr);
+                        outputData[pixel+1] = Math.round(rg*cg);
+                        outputData[pixel+2] = Math.round(rb*cb);
+                        outputData[pixel+ 3] = inputData[pixel+3];
+                        /*  var pixel = (y*w + x)*4;
+                        var factor = ((inputData[pixel] *.3 + inputData[pixel+1]*.59 + inputData[pixel+2]*.11) );
+                        outputData[pixel] = factor * 1;
+                        outputData[pixel+1] = factor * 1;
+                        outputData[pixel+2] = factor * 1;
+                        outputData[pixel+ 3] = inputData[pixel+ 3];*/
+                    }
+                }
+                return outputPA;
+            }
+            var r = 255;
+            var g = 255;
+            var b = 255;
+            var cr = r/255;
+            var cg = g/255;
+            var cb = b/255;
+            var changeR = function(newr) { r = newr; cr = r / 255; }
+            var changeG = function(newg) { g = newg; cg = g / 255; } 
+            var changeB = function(newb) { b = newb; cb = b / 255; } 
+            var toInvertPA = function(inputPA, outputPA, w, h) {
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                /*var cr = r/255;
+                var cg = g/255;
+                var cb = b/255;*/
+                for (var y = 1; y < h-1; y += 1) {
+                    for (var x = 1; x < w-1; x += 1) {
+                        var pixel = (y*w + x)*4;
+                        /*for (var c = 0; c < 3; c += 1) {
+                        outputData[pixel+c] = 255 - inputData[pixel+c];
+                        }*/
+                        outputData[pixel] = Math.round((255 - inputData[pixel]) * cr);
+                        outputData[pixel+1] = Math.round((255 -inputData[pixel+1]) * cg);
+                        outputData[pixel+2] = Math.round((255 - inputData[pixel+2]) * cb);
+                        outputData[pixel+ 3] = inputData[pixel+ 3];
+                    }
+                }
+                return outputPA;
+            }
+            var toRgbPA = function(inputPA, outputPA, w, h) {
+                //var A = $.inim.canvasIoFactory(canvas);
+                //var ctx = A[0];
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                //var w = input.width;
+                //var h = input.height;
+                /*var cr = r/255;
+                var cg = g/255;
+                var cb = b/255;*/
+                for (var y = 0; y < h; y += 1) {
+                    for (var x = 0; x < w; x += 1) {
+                        var pixel = (y*w + x)*4;
+                        outputData[pixel] = Math.round(inputData[pixel] * cr);
+                        outputData[pixel+1] = Math.round(inputData[pixel+1] * cg);
+                        outputData[pixel+2] = Math.round(inputData[pixel+2] * cb);
+                        outputData[pixel+ 3] = inputData[pixel+ 3];
+                    }
+                }
+                return outputPA;
+            }
+            var toBWOutlinePA = function(inputPA, outputPA, w, h) {
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                outputData =  doEdgeDetectionAlgorithm(inputData,255, 1, outputData,w,h, 8);
+                var pixel = 0;
+                for (var y = 0; y < h; ++y) {
+                    for (var x = 0; x < w; ++x) {
+                        if( outputData[pixel] < 240 ) {
+                            outputData[pixel] = 0;
+                            outputData[++pixel] = 0;
+                            outputData[++pixel] = 0;
+                        } else {
+                            outputData[pixel] = 255;
+                            outputData[++pixel] = 255;
+                            outputData[++pixel] = 255;
+                        }
+                        outputData[++pixel] = 255;
+                        ++pixel;
+                    }
+                }
+                return outputPA;
+            }
+            var matrixrange = 7.7;
+            var toMatrixOutlinePA = function(inputPA, outputPA, w, h) {
+                var inputData = inputPA.data;
+                var outputData = outputPA.data;
+                outputData =  doEdgeDetectionAlgorithm(inputData,255, 1, outputData,w,h, matrixrange);
+                var pixel = 0;
+                for (var y = 0; y < h; ++y) {
+                    for (var x = 0; x < w; ++x) {
+                        if( outputData[pixel] < 240 ) {
+                            outputData[pixel] = 0;
+                            outputData[++pixel] = 0;
+                            outputData[++pixel] = 0;
+                        } else {
+                            outputData[pixel] = 0;
+                            outputData[++pixel] = 192;
+                            outputData[++pixel] = 0;
+                        }
+                        outputData[++pixel] = 255;
+                        ++pixel;
+                    }
+                }
+                return outputPA;
+            }
+            var doEdgeDetectionAlgorithm = function (inputData, baseColor, grey, outputData, w, h, range) {
+                if (range == null){range=9}
+                var bytesPerRow = w * 4;
+                var pixel = bytesPerRow + 4; // Start at (1,1)
+                var hm1 = h - 1;
+                var wm1 = w - 1;
+                var d = new Date;
+                for (var y = 1; y < hm1; ++y) {
+                    // Prepare initial cached values for current row
+                    var centerRow = pixel - 4;
+                    var priorRow = centerRow - bytesPerRow;
+                    var nextRow = centerRow + bytesPerRow;
+                    var r1 = - inputData[priorRow]   - inputData[centerRow]   - inputData[nextRow];
+                    var g1 = - inputData[++priorRow] - inputData[++centerRow] - inputData[++nextRow];
+                    var b1 = - inputData[++priorRow] - inputData[++centerRow] - inputData[++nextRow];
+                    var rp = inputData[priorRow += 2];
+                    var rc = inputData[centerRow += 2];
+                    var rn = inputData[nextRow += 2];
+                    var r2 = - rp - rc - rn;
+                    var gp = inputData[++priorRow];
+                    var gc = inputData[++centerRow];
+                    var gn = inputData[++nextRow];
+                    var g2 = - gp - gc - gn;
+                    var bp = inputData[++priorRow];
+                    var bc = inputData[++centerRow];
+                    var bn = inputData[++nextRow];
+                    var b2 = - bp - bc - bn;
+                    // Main convolution loop
+                    for (var x = 1; x < wm1; ++x) {
+                        centerRow = pixel + 4;
+                        priorRow = centerRow - bytesPerRow;
+                        nextRow = centerRow + bytesPerRow;
+                        var r = baseColor + r1 - rp - (rc * (range*-1)) - rn;
+                        var g = baseColor + g1 - gp - (gc * (range*-1)) - gn;
+                        var b = baseColor + b1 - bp - (bc * (range*-1)) - bn;
+                        r1 = r2;
+                        g1 = g2;
+                        b1 = b2;
+                        rp = inputData[priorRow];
+                        rc = inputData[centerRow];
+                        rn = inputData[nextRow];
+                        r2 = - rp - rc - rn;
+                        gp = inputData[++priorRow];
+                        gc = inputData[++centerRow];
+                        gn = inputData[++nextRow];
+                        g2 = - gp - gc - gn;
+                        bp = inputData[++priorRow];
+                        bc = inputData[++centerRow];
+                        bn = inputData[++nextRow];
+                        b2 = - bp - bc - bn;
+                        if( !grey ) {
+                            outputData[pixel] = r + r2;
+                            outputData[++pixel] = g + g2;
+                            outputData[++pixel] = b + b2;
+                        } else {
+                            factor = .3* (r+r2) + .59*(g+g2) +.11*(b+b2);
+                            outputData[pixel] = factor;
+                            outputData[++pixel] = factor;
+                            outputData[++pixel] = factor;
+                        }
+                        outputData[++pixel] = 255; // alpha
+                        ++pixel;
+                    }
+                    pixel += 8;
+                }
+                //alert((new Date - d) / 1000);
+                return outputData;
+            }
+
+            $(document).ready(function() {
+                var switchi =0;
+                var h = $("#my_camera").height();
+                var w = $("#my_camera").width();
+
+                function play () {
+                    $("#output").height( h );
+                    $("#output").width( w );
+                    var out = $('#output').get(0);
+                    var ot = out.getContext('2d');
+                    try {
+                        out.width = out.offsetWidth = w; out.height = out.offsetHeight = h;
+                    } catch(err) {
+                        w = out.width;
+                        h = out.height;
+                    }
+                    draw_interval = setInterval(function() {
+                        //alert('w'+w+'h'+h);
+                        Webcam.snap( function(data_uri, cc) {
+                            var ct = cc.getContext('2d');
+                            var cPA = ct.getImageData(0, 0, w, h);
+                            var oPA = ot.getImageData(0, 0, w, h);
+                            if(switchi == 0) {
+                                oPA=toBWOutlinePA(cPA,oPA,w,h);
+                            } else if(switchi == 1) {
+                                oPA=toBlackWhitePA(cPA,oPA,w,h);
+                            } else if(switchi == 2) {
+                                oPA=toInvertPA(cPA,oPA,w,h);
+                            } else if(switchi == 3) {
+                                oPA=toMatrixOutlinePA(cPA,oPA,w,h);;
+                            } else if(switchi == 4) {
+                                oPA=toSepiaPA(cPA,oPA,w,h);;
+                            } else {
+                                //oPA=cPA;
+                                oPA=toRgbPA(cPA,oPA,w,h);
+                            }
+                            ot.putImageData(oPA, 0, 0);
+                        } );
+                    }, 33)
+                };
+                var hidestuff = function() {
+                    $('#matrixcontrollerdiv').hide();
+                    $('#rgb_input').slideUp();
+                }
+                $('#bw').mouseover(function(){switchi=1;hidestuff();});
+                $('#outline').mouseover(function(){switchi=0; hidestuff();});
+                $('#invert').mouseover(function(){
+                    switchi=2;$('#matrixcontrollerdiv').hide();$('#rgb_input').slideDown(); });
+                $('#matrix').mouseover(function(){switchi=3; $('#matrixcontrollerdiv').fadeIn();$('#matrixcontroller').val(matrixrange*1000);$('#rgb_input').slideUp();});
+                $('#old').mouseover(function(){switchi=4; ;$('#matrixcontrollerdiv').hide();$('#rgb_input').slideDown();});
+                $('#color').mouseover(function(){switchi=99; 
+                $('#rgb_input').slideDown();
+                $('#matrixcontrollerdiv').hide();});
+                $('#output').click(function(){$('video').get(0).play();});
+                $('#play').click(function(){$('video').get(0).play();});
+                $('#pause').click(function(){$('video').get(0).pause();});
+                $('#play').fadeIn().fadeOut().fadeIn().fadeOut().fadeIn();
+                $('#matrixcontroller').change(function(e){matrixrange=($(this).val()/1000); $('#mnr').val(matrixrange);});
+                //rgb
+                $('#rgb_r').val(r);
+                $('#rgb_g').val(g);
+                $('#rgb_b').val(b);
+                $('#rotatevalue').change(function(){
+                    return videoChange('-webkit-transform', 'rotate('+$(this).attr('value')+'deg)');
+                });
+                $('#rotateXvalue').change(function(){
+                    return videoChange('-webkit-transform', 'rotateX('+$(this).attr('value')+'deg)');
+                });
+                $('#rotateYvalue').change(function(){
+                    return videoChange('-webkit-transform', 'rotateY('+$(this).attr('value')+'deg)');
+                });
+                $('#scalevalue').change(function(){
+                    return videoChange('-webkit-transform', 'scale('+$(this).attr('value')/100+')');
+                });
+                $('#scaleXvalue').change(function(){
+                    return videoChange('-webkit-transform', 'scaleX('+$(this).attr('value')/100+')');
+                });
+                $('#scaleYvalue').change(function(){
+                    return videoChange('-webkit-transform', 'scaleY('+$(this).attr('value')/100+')');
+                });
+                $('#topvalue').change(function(){
+                    return videoChange('top', $(this).attr('value'));
+                });
+                $('#leftvalue').change(function(){
+                    return videoChange('left', $(this).attr('value'));
+                });
+                $('#skewvalue').change(function(){
+                    return videoChange('-webkit-transform', 'skew('+$(this).attr('value')+'deg,'+$(this).attr('value')+'deg)');
+                });
+                $('#skewXvalue').change(function(){
+                    return videoChange('-webkit-transform', 'skewX('+$(this).attr('value')+'deg)');
+                });
+                $('#skewYvalue').change(function(){
+                    return videoChange('-webkit-transform', 'skewY('+$(this).attr('value')+'deg)');
+                });
+
+                // start web cam
+                Webcam.on( 'live', function() {
+                    play();
+                } );
+                Webcam.on( 'error', function(err) {
+                    alert( "ERROR ON CAMERA " + err );
+                } );
+                /*Webcam.set( 'constraints', {
+                    mandatory: {
+                        minWidth: w,
+                        minHeight: h,
+                        minFrameRate: 30
+                    }
+                } );*/
+                Webcam.set( { width: w, height: h, image_format: 'jpeg', jpeg_quality: 90, force_flash: false, flip_horiz: true, fps: 30 });
+                Webcam.attach( '#my_camera' );
+            });
+        </script>
+        <style>
+            body {
+                font:15px Courier New, verdana,arial,sans-serif;
+            }
+            .navlist {
+              border:0px;
+              margin:5px;
+              padding:0px;
+            }
+            ul .navlist {
+            margin-left: 0;
+            padding-left: 0;
+            white-space: nowrap;
+            }
+            .navlist li {
+            display: inline;
+            list-style-type: none;
+            }
+            .navlist a {  padding: 3px 9px; }
+            .navlist a:link, .navlist a:visited {
+            color: #fff;
+            background-color: #036;
+            text-decoration: none;
+            }
+            .navlist a:hover {
+            color: #fff;
+            background-color: #369;
+            text-decoration: none;
+            }
+            .rgb {
+                width:400px;
+            }
+            #rgb_input {
+                font:17px Courier New, verdana,arial,sans-serif;
+            }
+        </style>
+    </head>
+
+    <body>
+       <div>
+            <div id="my_camera" style="border:1px solid black; width:640px; height:480px; float:left;">
+            </div>
+            <div><canvas id="output" style="border:1px solid black; width:640px; height:480px;"></canvas>
+            </div>
+        </div>
+        <ul class="navlist">
+            <li style="padding-left:2px;">Effects:</li>
+            <li ><a href="javascript://" id="bw">Bw</a></li> <li><a href="javascript://" id="outline">Outline</a></li> <li><a href="javascript://" id="color">Color</a></li>
+            <li><a href="javascript://" id="invert">Invert</a></li>
+            <li><a href="javascript://" id="matrix">Matrix</a></li>
+            <li><a href="javascript://" id="old">Old</a></li>
+        </ul>
+        <br>
+        <ul id="rgb_input" style="display:none;">
+            <li>R <input type="range" min='0' max='255' onchange="changeR(this.value);$('#rgb_r_p').text(Math.round(r/255*100));" id="rgb_r" class="rgb" ><span id="rgb_r_p">100</span>%</li>
+            <li>G <input type="range" min='0' max='255' onchange="changeG(this.value);;$('#rgb_g_p').text(Math.round(g/255*100));" id="rgb_g" class="rgb" ><span id="rgb_g_p">100</span>%</li>
+            <li>B <input type="range" min='0' max='255' onchange="changeB(this.value);$('#rgb_b_p').text(Math.round(b/255*100));" id="rgb_b"  class="rgb" ><span id="rgb_b_p">100</span>%</li>
+        </ul>
+        <br>
+        <div style="position:absolute; right:50px; top:20px;text-align:right;">CSS
+            <ul style="list-style-type: none">
+                <li><span class="lable" id="toplable">Top:</span> <input type='range' min='0' max='600' value='100' id="topvalue" class="avalue" style="width:100px"  /></li> 
+                <li><span class="lable" id="leftlable">Left:</span> <input type='range' min='0' max='800' value='100' id="leftvalue" class="avalue" style="width:100px" /></li> 
+                <li><span class="lable" id="rotateYlable">Rotate:</span> <input type='range' min='-180' max='180' value='0' id="rotatevalue" class="avalue" style="width:100px"/></li>
+                <li><span class="lable" id="rotateYlable">RotateX:</span> <input type='range' min='-180' max='180' value='0' id="rotateXvalue" class="avalue" style="width:100px" /></li> 
+                <li><span class="lable" id="rotateXlable">RotateY:</span> <input type='range' min='-180' max='180' value='0' id="rotateYvalue" class="avalue" style="width:100px" /></li> 
+                <li><span class="lable" id="scalelable">Scale:</span> <input type='range' min='0' max='1000' value='100' id="scalevalue" class="avalue" style="width:100px; position:relative; z-index:999;" /></li> 
+                <li><span class="lable" id="scaleXlable">ScaleX:</span> <input type='range' min='0' max='1000' value='100' id="scaleXvalue" class="avalue" style="width:100px" /></li> 
+
+                <li><span class="lable" id="scaleYlable">ScaleY:</span> <input type='range' min='0' max='1000' value='100' id="scaleYvalue" class="avalue" style="width:100px" /></li> 
+                <li><span class="lable" id="skewlable">SkewXY:</span> <input type='range' min='-180' max='180' value='0' id="skewvalue"  style="width:100px" class="avalue" /></li> 
+
+                <li><span class="lable" id="skewXlable">SkewX:</span> <input type='range' min='-180' max='180'  style="width:100px" value='0' id="skewXvalue" class="avalue" /></li> 
+
+                <li><span class="lable" id="skewYlable">SkewY:</span> <input type='range' min='-180' max='180'  style="width:100px" value='0' id="skewYvalue" class="avalue" /></li> 
+            </ul>
+        </div>
+    </body>
+</html>
