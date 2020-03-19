@@ -986,7 +986,7 @@ var Webcam = {
 		return taBytes;
 	},
 	
-	upload: function(image_data_uri, target_url, callback) {
+	upload: function(image_data_uri, target_url, post_data, callback, headers) {
 		// submit image data to server using binary AJAX
 		var form_elem_name = this.params.upload_name || 'webcam';
 		
@@ -1000,9 +1000,27 @@ var Webcam = {
 		// extract raw base64 data from Data URI
 		var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
 		
+		// construct parameters
+		if ( typeof post_data == 'function' ) {
+			if ( typeof callback == 'object' ) {
+				headers = callback;
+			}
+			callback = post_data;
+			post_data = undefined;
+		}
+
 		// contruct use AJAX object
 		var http = new XMLHttpRequest();
 		http.open("POST", target_url, true);
+
+		// Add headers
+		if ( typeof headers == 'object' ) {
+			for( var item_name in headers ){
+				if ( headers.hasOwnProperty(item_name) ) {
+					http.setRequestHeader(item_name,  headers[item_name]);
+				}
+			}
+		}
 		
 		// setup progress events
 		if (http.upload && http.upload.addEventListener) {
@@ -1026,7 +1044,27 @@ var Webcam = {
 		
 		// stuff into a form, so servers can easily receive it as a standard file upload
 		var form = new FormData();
-		form.append( form_elem_name, blob, form_elem_name+"."+image_fmt.replace(/e/, '') );
+		if ( typeof form_elem_name == 'object' ) {
+			/*Customize file input field like this
+				Webcam.params.upload_name = {
+					'input_name' :'[input file name]',
+					'file_name' : [file_name]
+				}
+
+			*/
+			form.append( form_elem_name['input_name'], blob, form_elem_name['file_name']+"."+image_fmt.replace(/e/, '') );
+		} else {
+			form.append( form_elem_name, blob, form_elem_name+"."+image_fmt.replace(/e/, '') );
+		}
+
+		// Add post data to formdata
+		if ( typeof post_data == 'object' ) {
+			for( var item_name in post_data ){
+				if ( post_data.hasOwnProperty(item_name) ) {
+					form.append( item_name, post_data[item_name] );
+				}
+			}
+		}
 		
 		// send data to server
 		http.send(form);
