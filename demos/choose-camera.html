@@ -46,13 +46,14 @@
         image_format: "jpeg",
         jpeg_quality: 90,
       });
-      Webcam.attach("#my_camera", true);
       Webcam.on("init", function () {
-        var cameras = Webcam.getCameras();
-        if (cameras.length > 0) {
-          Webcam.setCamera(cameras[cameras.length - 1]);
-        }
+        Webcam.getCameras(function (cameras) {
+          if (cameras.length > 0) {
+            Webcam.setCamera(cameras[cameras.length - 1].id);
+          }
+        });
       });
+      Webcam.attach("#my_camera", true);
     </script>
 
     <!-- A button for taking snaps -->

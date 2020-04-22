@@ -292,48 +292,51 @@ var Webcam = {
 			// add video element to dom
 			elem.appendChild( video );
 			this.video = video;
-			
-			// ask user for access to their camera
-			var self = this;
-			this.mediaDevices.getUserMedia({
-				"audio": false,
-				"video": this.params.constraints || {
-					mandatory: {
-						minWidth: this.params.dest_width,
-						minHeight: this.params.dest_height
+			this.inited = true;
+			this.dispatch("init");
+			if(!notInit) {
+				// ask user for access to their camera
+				var self = this;
+				this.mediaDevices.getUserMedia({
+					"audio": false,
+					"video": this.params.constraints || {
+						mandatory: {
+							minWidth: this.params.dest_width,
+							minHeight: this.params.dest_height
+						}
 					}
-				}
-			})
-			.then( function(stream) {
-				// got access, attach stream to video
-				video.onloadedmetadata = function(e) {
-					self.stream = stream;
-					self.loaded = true;
-					self.live = true;
-					self.dispatch('load');
-					self.dispatch('live');
-					self.flip();
-				};
-				// as window.URL.createObjectURL() is deprecated, adding a check so that it works in Safari.
-				// older browsers may not have srcObject
-				if ("srcObject" in video) {
-				  	video.srcObject = stream;
-				}
-				else {
-				  	// using URL.createObjectURL() as fallback for old browsers
-				  	video.src = window.URL.createObjectURL(stream);
-				}
-			})
-			.catch( function(err) {
-				// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
-				// JH 2016-08-07 But only if flash is actually installed -- if not, dispatch error here and now.
-				if (self.params.enable_flash && self.detectFlash()) {
-					setTimeout( function() { self.params.force_flash = 1; self.attach(elem); }, 1 );
-				}
-				else {
-					self.dispatch('error', err);
-				}
-			});
+				})
+				.then( function(stream) {
+					// got access, attach stream to video
+					video.onloadedmetadata = function(e) {
+						self.stream = stream;
+						self.loaded = true;
+						self.live = true;
+						self.dispatch('load');
+						self.dispatch('live');
+						self.flip();
+					};
+					// as window.URL.createObjectURL() is deprecated, adding a check so that it works in Safari.
+					// older browsers may not have srcObject
+					if ("srcObject" in video) {
+						video.srcObject = stream;
+					}
+					else {
+						// using URL.createObjectURL() as fallback for old browsers
+						video.src = window.URL.createObjectURL(stream);
+					}
+				})
+				.catch( function(err) {
+					// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
+					// JH 2016-08-07 But only if flash is actually installed -- if not, dispatch error here and now.
+					if (self.params.enable_flash && self.detectFlash()) {
+						setTimeout( function() { self.params.force_flash = 1; self.attach(elem); }, 1 );
+					}
+					else {
+						self.dispatch('error', err);
+					}
+				});
+			}
 		}
 		else if (this.iOS) {
 			// prepare HTML elements
@@ -474,16 +477,79 @@ var Webcam = {
 		}
 	},
 
-	getCameras: function () {
+	getCameras: function (success) {
 		if (this.userMedia) {
+			this.mediaDevices.enumerateDevices().then(function(devices) {
+				var data = [];
+				for(var i = 0;i < devices.length;i++) {
+					if(devices[i].kind === "videoinput") {
+						data.push({
+							id: devices[i].deviceId,
+							groupId: devices[i].groupId,
+							label: devices[i].label
+						});
+					}
+				}
+				success(data);
+			})
 		} else if (this.iOS) {
 		} else if (this.params.enable_flash && this.detectFlash()) {
-		  return this.getMovie()._getCameras();
+			var devices = this.getMovie()._getCameras();
+			var data = [];
+			for(var i = 0;i < devices.length;i++) {
+				data.push({
+					id: devices[i],
+					groupId: "",
+					label: devices[i]
+				});
+			}
+			success(data);
 		}
 	  },
   
 	setCamera: function (name) {
 		if (this.userMedia) {
+			// ask user for access to their camera
+			var self = this;
+			var video = this.video;
+			this.mediaDevices.getUserMedia({
+				"audio": false,
+				"video": {
+					deviceId: {
+						exact: name,
+					}
+				}
+			})
+			.then( function(stream) {
+				// got access, attach stream to video
+				video.onloadedmetadata = function(e) {
+					self.stream = stream;
+					self.loaded = true;
+					self.live = true;
+					self.dispatch('load');
+					self.dispatch('live');
+					self.flip();
+				};
+				// as window.URL.createObjectURL() is deprecated, adding a check so that it works in Safari.
+				// older browsers may not have srcObject
+				if ("srcObject" in video) {
+					video.srcObject = stream;
+				}
+				else {
+					// using URL.createObjectURL() as fallback for old browsers
+					video.src = window.URL.createObjectURL(stream);
+				}
+			})
+			.catch( function(err) {
+				// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
+				// JH 2016-08-07 But only if flash is actually installed -- if not, dispatch error here and now.
+				if (self.params.enable_flash && self.detectFlash()) {
+					setTimeout( function() { self.params.force_flash = 1; self.attach(elem); }, 1 );
+				}
+				else {
+					self.dispatch('error', err);
+				}
+			});
 		} else if (this.iOS) {
 		} else if (this.params.enable_flash && this.detectFlash()) {
 		  var movie = this.getMovie();
