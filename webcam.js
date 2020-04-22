@@ -605,7 +605,6 @@ var Webcam = {
 		} else if (this.iOS) {
 		} else if (this.params.enable_flash && this.detectFlash()) {
 		  var movie = this.getMovie();
-		  movie._setCamera(name);
 		  movie._initCamera();
 		}
 	},
