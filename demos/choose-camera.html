@@ -49,7 +49,7 @@
       Webcam.on("init", function () {
         Webcam.getCameras(function (cameras) {
           if (cameras.length > 0) {
-            Webcam.setCamera(cameras[cameras.length - 1].id);
+            Webcam.setAndInitCamera(cameras[cameras.length - 1].id);
           }
         });
       });
