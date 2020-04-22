@@ -40,6 +40,7 @@
 		private var image_format:String;
 		private var fps:int;
 		private var flip_horiz:Boolean;
+		private var camera_idx:int;
 		
 		public function Webcam() {
 			// class constructor
@@ -68,45 +69,25 @@
 			
 			// Hack to auto-select iSight camera on Mac (JPEGCam Issue #5, submitted by manuel.gonzalez.noriega)
 			// From: http://www.squidder.com/2009/03/09/trick-auto-select-mac-isight-in-flash/
-			var cameraIdx:int = -1;
+			camera_idx = -1;
 			for (var idx = 0, len = Camera.names.length; idx < len; idx++) {
 				if (Camera.names[idx] == "USB Video Class Video") {
-					cameraIdx = idx;
+					camera_idx = idx;
 					idx = len;
 				}
 			}
-			if (cameraIdx > -1) camera = Camera.getCamera( String(cameraIdx) );
+			if (camera_idx > -1) camera = Camera.getCamera( String(camera_idx) );
 			else camera = Camera.getCamera();
 									
 			if (camera != null) {
-				camera.addEventListener(ActivityEvent.ACTIVITY, activityHandler);
-				camera.addEventListener(StatusEvent.STATUS, handleCameraStatus, false, 0, true);
-				video = new Video( Math.max(video_width, dest_width), Math.max(video_height, dest_height) );
-				video.attachCamera(camera);
-				addChild(video);
-				
-				if ((video_width < dest_width) && (video_height < dest_height)) {
-					video.scaleX = video_width / dest_width;
-					video.scaleY = video_height / dest_height;
-				}
-
-				if (flip_horiz) {
-					video.scaleX *= -1;
-					video.x = video.width + video.x;
-				}
-				
-				camera.setQuality(0, 100);
-				camera.setKeyFrameInterval(10);
-				camera.setMode( Math.max(video_width, dest_width), Math.max(video_height, dest_height), fps );
-				
-				// only detect motion once, to determine when camera is "live"
-				camera.setMotionLevel( 1 );
-				
+				ExternalInterface.addCallback('_getCameras', getCameras);
+				ExternalInterface.addCallback('_setCamera', setCamera);
+				ExternalInterface.addCallback('_initCamera', initCamera);
 				ExternalInterface.addCallback('_snap', snap);
 				ExternalInterface.addCallback('_configure', configure);
 				ExternalInterface.addCallback('_releaseCamera', releaseCamera);
 								
-				ExternalInterface.call('Webcam.flashNotify', 'flashLoadComplete', true);
+				ExternalInterface.call('Webcam.flashNotify', 'flashInitComplete', true);
 			}
 			else {
 				trace("You need a camera.");
@@ -141,6 +122,56 @@
 			}
 		}
 		
+		public function getCameras() {
+			return Camera.names;
+		}
+
+		public function setCamera(name: String) {
+			for (var idx = 0, len = Camera.names.length; idx < len; idx++) {
+				if (Camera.names[idx] == name) {
+					camera_idx = idx;
+					return;
+				}
+			}
+			ExternalInterface.call('Webcam.flashNotify', "error", "camera: " + name + " is not found");
+			trace("camera: " + name + " is not found");
+		}
+
+		public function initCamera() {
+			releaseCamera();
+			if (camera_idx > -1) camera = Camera.getCamera(String(camera_idx));
+			else camera = Camera.getCamera();
+
+			if (camera != null) {
+				camera.addEventListener(ActivityEvent.ACTIVITY, activityHandler);
+				camera.addEventListener(StatusEvent.STATUS, handleCameraStatus, false, 0, true);
+				video = new Video(Math.max(video_width, dest_width), Math.max(video_height, dest_height));
+				video.attachCamera(camera);
+				addChild(video);
+
+				if ((video_width < dest_width) && (video_height < dest_height)) {
+					video.scaleX = video_width / dest_width;
+					video.scaleY = video_height / dest_height;
+				}
+
+				if (flip_horiz) {
+					video.scaleX *= -1;
+					video.x = video.width + video.x;
+				}
+
+				camera.setQuality(0, 100);
+				camera.setKeyFrameInterval(10);
+				camera.setMode(Math.max(video_width, dest_width), Math.max(video_height, dest_height), fps);
+
+				// only detect motion once, to determine when camera is "live"
+				camera.setMotionLevel(1);
+				ExternalInterface.call('Webcam.flashNotify', 'flashLoadComplete', true);
+			} else {
+				trace("You need a camera.");
+				ExternalInterface.call('Webcam.flashNotify', "error", "No camera was detected.");
+			}
+		}
+
 		public function snap() {
 			// take snapshot from camera, and upload if URL was provided
 			trace("in snap(), drawing to bitmap");
@@ -185,13 +216,13 @@
 		}
 
 		public function releaseCamera() {
-
 			trace("in releaseCamera(), turn off camera");
-			video.attachCamera(null);
-			video.clear();
-			camera = null;
-			removeChild(video);
-
+			if (video != null){
+				video.attachCamera(null);
+			    video.clear();
+				camera = null;
+			    removeChild(video);
+			}
 		}
 	}
 }
