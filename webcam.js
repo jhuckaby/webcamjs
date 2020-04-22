@@ -38,6 +38,7 @@ var Webcam = {
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
+	inited: false, // true when webcam privilege is generated
 	loaded: false,   // true when webcam movie finishes loading
 	live: false,     // true when webcam is initialized and ready to snap
 	userMedia: true, // true when getUserMedia is supported natively
@@ -222,7 +223,7 @@ var Webcam = {
 		img.src = origObjURL;
 	},
 	
-	attach: function(elem) {
+	attach: function(elem, notInit) {
 		// create webcam preview and attach to DOM element
 		// pass in actual DOM reference, ID, or CSS selector
 		if (typeof(elem) == 'string') {
@@ -443,6 +444,12 @@ var Webcam = {
 			var div = document.createElement('div');
 			div.innerHTML = this.getSWFHTML();
 			elem.appendChild( div );
+			var _this = this;
+			if(!notInit){
+				this.on("init",function() {
+					_this.getMovie()._initCamera();
+				});
+			}
 		}
 		else {
 			this.dispatch('error', new WebcamError( this.params.noInterfaceFoundText ));
@@ -464,6 +471,24 @@ var Webcam = {
 			// no crop, set size to desired
 			elem.style.width = '' + this.params.width + 'px';
 			elem.style.height = '' + this.params.height + 'px';
+		}
+	},
+
+	getCameras: function () {
+		if (this.userMedia) {
+		} else if (this.iOS) {
+		} else if (this.params.enable_flash && this.detectFlash()) {
+		  return this.getMovie()._getCameras();
+		}
+	  },
+  
+	setCamera: function (name) {
+		if (this.userMedia) {
+		} else if (this.iOS) {
+		} else if (this.params.enable_flash && this.detectFlash()) {
+		  var movie = this.getMovie();
+		  movie._setCamera(name);
+		  movie._initCamera();
 		}
 	},
 	
@@ -670,7 +695,7 @@ var Webcam = {
 	
 	getMovie: function() {
 		// get reference to movie object/embed in DOM
-		if (!this.loaded) return this.dispatch('error', new FlashError("Flash Movie is not loaded yet"));
+		if (!this.inited) return this.dispatch('error', new FlashError("Flash Movie is not loaded yet"));
 		var movie = document.getElementById('webcam_movie_obj');
 		if (!movie || !movie._snap) movie = document.getElementById('webcam_movie_embed');
 		if (!movie) this.dispatch('error', new FlashError("Cannot locate Flash movie in DOM"));
@@ -933,6 +958,10 @@ var Webcam = {
 	flashNotify: function(type, msg) {
 		// receive notification from flash about event
 		switch (type) {
+			case "flashInitComplete":
+				this.inited = true;
+				this.dispatch("init");
+				break;
 			case 'flashLoadComplete':
 				// movie loaded successfully
 				this.loaded = true;
